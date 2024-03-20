@@ -29,13 +29,15 @@ def get_multiclass_ce(num_classes, best_accuracy: float | None =None):
     return multinomial.entropy(1, p) * nats_to_bits
 
 def simulate_loss(factor, N, initial_loss, best_loss):
-    return np.exp(-factor * N) * (initial_loss - best_loss) + best_loss
+    return np.exp(-factor * N / 10000) * (initial_loss - best_loss) + best_loss
 
 # Setup dataset sizes to sample from and x to plot against.
-x = np.linspace(0, 1, 100)
+x = np.linspace(0, 1, 1000)
 # We want N to run from 1 to infinity for the range of x values
-N = 1 / (1 - x) - 1
+N = (1 / (1 - x) - 1) * 10000
 idx = list(range(len(x)))
+
+
 
 # Left plot: same loss in infinite sample limit
 num_classes = 10
@@ -60,12 +62,12 @@ def get_tick_label(tick_idx):
         case tick_idx if tick_idx >= len(idx):
             return "∞"
         case _:
-            return f"{int(N[int(tick_idx)]*10000)}"
+            return f"{int(N[int(tick_idx)])}"
 
         
 new_tick_labels = [get_tick_label(tick_idx) for tick_idx in current_ticks]
 prior_data_conflict_ax.set_xticklabels(new_tick_labels)
-prior_data_conflict_ax.set_title("Prior-Data Conflict: Same/Similar Loss for ∞ Sample Limit") 
+prior_data_conflict_ax.set_title("Prior-Data Conflict: Similar Performance in ∞ Sample Limit") 
 
 # Right plot: misspecified models plot
 
@@ -77,7 +79,7 @@ model_misspecification_ax.legend()
 
 new_tick_labels = [get_tick_label(tick_idx) for tick_idx in current_ticks]
 model_misspecification_ax.set_xticklabels(new_tick_labels)
-model_misspecification_ax.set_title("Model Misspecification: Different Loss for ∞ Sample Limit") 
+model_misspecification_ax.set_title("Model Misspecification: Different Performance for ∞ Sample Limit") 
 
 
 plt.suptitle(cmce_title)
@@ -100,21 +102,61 @@ marginal_ce_ax = axes[0,0]
 marginal_likelihoood_ax = axes[0,1]
 
 jce_tex = r"\operatorname{H}(\hat{\mathrm{p}} \Vert \mathrm{p}(\cdot \mid \phi))[X_N, X_{N-1}, ..., X_1]"
-clml_tex = r"\mathrm{p}(\circ \mid \phi_\circ))[x_N | x_{N-1}, ..., x_1]"
-lml_tex = r"\mathrm{p}(\circ \mid \phi_\circ))[x_N, x_{N-1}, ..., x_1]"
+clml_tex = r"\mathrm{p}(x_N \mid x_{N-1}, ..., x_1, \phi)"
+lml_tex = r"\mathrm{p}(x_N, x_{N-1}, ..., x_1, \phi)"
+cmce_tex = r"\operatorname{H}({\hat{\mathrm{p}} \Vert \mathrm{p}(\circ \mid \phi)})[X_N \mid X_{N-1}, ..., X_1]"
 
 # Left plot: joint cross-entropy as area under marginal cross-entropy
 phi_accuracy = 0.92
 phi_loss = get_multiclass_ce(num_classes, phi_accuracy)
 loss = simulate_loss(2, N, initial_loss, phi_loss)
-mce_line = marginal_ce_ax.plot(idx, loss, zorder=4-i, label=rf"$\phi_{i}$")
-cmce_tex = r"\operatorname{H}({\hat{\mathrm{p}} \Vert \mathrm{p}(\circ \mid \phi)})[X_N | X_{N-1}, ..., X_1]"
-marginal_ce_ax.text(20, loss[20], f"${cmce_tex}$", verticalalignment='bottom', horizontalalignment='left', c=mce_line[0].get_color())
-marginal_ce_ax.fill_between(idx, np.zeros_like(loss), loss, alpha=0.2, label=f"Joint Cross-Entropy")
-marginal_ce_ax.text(50, phi_loss/2, f"${jce_tex} {unit_tex}$", verticalalignment='center', horizontalalignment='center')
+mce_line = marginal_ce_ax.plot(idx, loss, zorder=4-i, color="C0", label="Marginal Cross-Entropy")
+# marginal_ce_ax.text(20, loss[20], f"$\phi$", verticalalignment='bottom', horizontalalignment='left', c=mce_line[0].get_color())
+xy = (20, loss[20]+0.1)
+xytext = (30, loss[20] + 0.1)
+arrowprops = dict(facecolor=mce_line[0].get_color(), shrink=0.05)
+marginal_ce_ax.annotate(f"${cmce_tex}$", zorder=10, xy=xy, xytext=xytext, arrowprops=arrowprops, verticalalignment='center', horizontalalignment='left', color=mce_line[0].get_color())
 
+marginal_ce_ax.fill_between(idx, np.zeros_like(loss), loss, alpha=0.2, label=f"Joint Cross-Entropy", color="C1")
+marginal_ce_ax.text(50, phi_loss/2, f"${jce_tex}$", verticalalignment='center', horizontalalignment='center', color="C1")
+
+marginal_ce_ax.set_xlabel('Dataset size N')
+marginal_ce_ax.set_ylabel(f'$1 {unit_tex}$')
 marginal_ce_ax.legend()
 marginal_ce_ax.set_title("Joint Cross-Entropy as Area under Marginal Cross-Entropy")
+
+marginal_ce_ax.set_xticklabels(new_tick_labels)
+marginal_ce_ax.set_title("Joint Cross-Entropy as Area under Marginal Cross-Entropy") 
+
+# Right plot: Marginal likelihood as area under conditional training loss
+# Here we need to add some noise to the loss because we look at individual samples
+
+diff_N = np.diff(N, prepend=N[0])
+print(diff_N)
+scaled_noise = np.random.gumbel(0, 0.1 / diff_N**0.5, len(loss))
+noised_loss = loss - scaled_noise
+
+marginal_likelihoood_ax.plot(idx, noised_loss, zorder=4-i, color="C2", label="Conditional Marginal Likelihood")
+xy = (60, noised_loss[60]+0.1)
+xytext = (30, noised_loss[20] + 0.1)
+arrowprops = dict(facecolor='C0', shrink=0.05)
+marginal_likelihoood_ax.annotate(f"${clml_tex}$", zorder=10, xy=xy, xytext=xytext, arrowprops=arrowprops, verticalalignment='center', horizontalalignment='left', color="C2")
+
+marginal_likelihoood_ax.fill_between(idx, np.zeros_like(noised_loss), noised_loss, alpha=0.2, label=f"Marginal Likelihood Loss", color="C3")
+marginal_likelihoood_ax.text(50, phi_loss/2, f"${lml_tex}$", verticalalignment='center', horizontalalignment='center', color="C3")
+
+marginal_likelihoood_ax.set_xlabel('Dataset size N')
+marginal_likelihoood_ax.set_ylabel(f'$1 {unit_tex}$')
+marginal_likelihoood_ax.legend()
+marginal_likelihoood_ax.set_title("Marginal Likelihood as Area under Conditional Training Loss")
+
+marginal_likelihoood_ax.set_xticklabels(new_tick_labels)
+marginal_likelihoood_ax.set_title("Effect of Batch Size on Training Loss") 
+
+# Simulate a larger batch size. 
+batch_size = 512
+batch_N = np.arange(0, 100000, batch_size)
+# 
 
 plt.tight_layout()
 plt.show()
