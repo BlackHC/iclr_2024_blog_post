@@ -47,10 +47,10 @@ def x_to_N(x):
 assert np.allclose(N_to_x(Ns), Xs)
 assert np.allclose(x_to_N(Xs), Ns)
 
-Ns = np.arange(0, 48000, 1)
+Ns = np.arange(0, 48000, 4)
 Xs = N_to_x(Ns)
 # Concat a linrange from max(x) to 1
-Xs = np.concatenate([Xs, np.linspace(1, Xs[-1], 100000, endpoint=False)[::-1]])
+Xs = np.concatenate([Xs, np.linspace(1, Xs[-1], 1000, endpoint=False)[::-1]])
 Ns = x_to_N(Xs)
 
 def find_idx_by_N(Ns, n):
@@ -86,14 +86,16 @@ def get_tick_label(x):
         case x if x < 0:
             return " "
         case x if x >= 1:
-            return "∞"
+            return r"$\infty$"
         case _:
             return f"{int(x_to_N(x))}"
 
         
 new_tick_labels = [get_tick_label(x) for x in current_ticks]
 prior_data_conflict_ax.set_xticklabels(new_tick_labels)
-prior_data_conflict_ax.set_title("Prior-Data Conflict: Similar Performance in ∞ Sample Limit") 
+prior_data_conflict_ax.get_xticklabels()[-2].set_fontsize(24)
+
+prior_data_conflict_ax.set_title("Prior-Data Conflict") 
 
 # Right plot: misspecified models plot
 
@@ -104,12 +106,19 @@ for i, best_model_accuracy in zip(range(1, 4), [0.94, 0.86, 0.89]):
 model_misspecification_ax.legend()
 
 model_misspecification_ax.set_xticklabels(new_tick_labels)
-model_misspecification_ax.set_title("Model Misspecification: Different Performance for ∞ Sample Limit") 
+model_misspecification_ax.get_xticklabels()[-2].set_fontsize(24)
 
+model_misspecification_ax.set_title("Model Misspecification") 
+model_misspecification_ax.set_xlabel('Dataset size N')
 
 plt.suptitle(cmce_title)
 # Adjust layout and display the plot
 plt.tight_layout()
+
+# Save as SVG
+plt.savefig("prior_conflict_and_model_misspecification.svg")
+plt.savefig("prior_conflict_and_model_misspecification.png")
+
 plt.show()
 
 
@@ -150,6 +159,7 @@ marginal_ce_ax.set_xlabel('Dataset size N')
 marginal_ce_ax.set_ylabel(f'$1 {unit_tex}$')
 marginal_ce_ax.legend()
 marginal_ce_ax.set_xticklabels(new_tick_labels)
+marginal_ce_ax.get_xticklabels()[-2].set_fontsize(24)
 marginal_ce_ax.set_title("Marginal & Joint Cross-Entropy") 
 
 # Right plot: Marginal likelihood as area under conditional training loss
@@ -175,6 +185,7 @@ marginal_likelihoood_ax.set_ylabel(f'$1 {unit_tex}$')
 marginal_likelihoood_ax.legend()
 
 marginal_likelihoood_ax.set_xticklabels(new_tick_labels)
+marginal_likelihoood_ax.get_xticklabels()[-2].set_fontsize(24)
 marginal_likelihoood_ax.set_title("Marginal Likelihood & Conditional Marginal Log Likelihood") 
 
 plt.suptitle("Chain Rule: Joint Quantities as Area under the Marginals")
@@ -190,6 +201,9 @@ plt.suptitle("Chain Rule: Joint Quantities as Area under the Marginals")
 # marginal_likelihoood_ax.plot(Xs[:len(batched_loss)], noised_batched_loss, zorder=0, color="C4", label=f"Batch Size {batch_size}")
 
 plt.tight_layout()
+# Save as SVG
+plt.savefig("area_under_curve.svg")
+plt.savefig("area_under_curve.png")
 plt.show()
 
 # %%
