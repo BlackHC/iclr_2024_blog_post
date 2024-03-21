@@ -15,7 +15,7 @@ model_misspecification_ax = axes[0,1]
 # cmce_tex = r"\operatorname{H}_{\hat{\mathrm{p}} \Vert \mathrm{p}(\cdot \mid \Phi)}[X_N | X_{N-1}, ..., X_1]"
 cmce_tex = r"\operatorname{H}({\hat{\mathrm{p}} \Vert \mathrm{p}(\circ \mid \phi_\circ)})[X_N | X_{N-1}, ..., X_1]"
 unit_tex = r"\mathrm{ / bits}" 
-cmce_title = "Multi-Class Classification: Num Samples vs Conditional Marginal CE (Cross-Validation NLL)"
+cmce_title = "Num Samples vs Conditional Marginal Cross-Entropy (Cross-Validation NLL)"
 
 
 # Simulate the ce for multi-class classification
@@ -35,14 +35,16 @@ def simulate_loss(factor, N, initial_loss, best_loss):
 
 # Setup dataset sizes to sample from and x to plot against.
 Xs = np.linspace(0, 1, 1000)
+
+x_power = 1
 # We want N to run from 1 to infinity for the range of x values
-Ns = (1 / (1 - Xs) - 1) * N_factor
+Ns = (1 / (1 - Xs)**(1/x_power) - 1) * N_factor
 
 def N_to_x(N):
-    return 1 - 1 / (1 + N / N_factor)
+    return 1 - 1 / (1 + N / N_factor)**x_power
 
 def x_to_N(x):
-    return (1 / (1 - x)  - 1) * N_factor
+    return (1 / (1 - x)**(1/x_power) - 1) * N_factor
 
 assert np.allclose(N_to_x(Ns), Xs)
 assert np.allclose(x_to_N(Xs), Ns)
@@ -58,12 +60,10 @@ def find_idx_by_N(Ns, n):
     idx = np.searchsorted(Ns, n)
     return idx
 
-
 def find_idx_by_x(Xs, x):
     # Find n in N via binary search
     idx = np.searchsorted(Xs, x)
     return idx
-
 
 # Left plot: same loss in infinite sample limit
 num_classes = 10
@@ -116,8 +116,8 @@ plt.suptitle(cmce_title)
 plt.tight_layout()
 
 # Save as SVG
-plt.savefig("prior_conflict_and_model_misspecification.svg")
-plt.savefig("prior_conflict_and_model_misspecification.png")
+plt.savefig(f"prior_conflict_and_model_misspecification_{x_power:0.2f}.svg")
+plt.savefig(f"prior_conflict_and_model_misspecification_{x_power:0.2f}.png")
 
 plt.show()
 
@@ -145,10 +145,10 @@ cmce_tex = r"\operatorname{H}({\hat{\mathrm{p}} \Vert \mathrm{p}(\circ \mid \phi
 phi_accuracy = 0.92
 phi_loss = get_multiclass_ce(num_classes, phi_accuracy)
 loss = simulate_loss(2, Ns, initial_loss, phi_loss)
-mce_line = marginal_ce_ax.plot(Xs, loss, zorder=4-i, color="C0", label="Marginal Cross-Entropy")
+mce_line = marginal_ce_ax.plot(Xs, loss, zorder=4-i, color="C0", label="Conditional Marginal Cross-Entropy")
 # marginal_ce_ax.text(20, loss[20], f"$\phi$", verticalalignment='bottom', horizontalalignment='left', c=mce_line[0].get_color())
 xy = (0.4, loss[find_idx_by_x(Xs, 0.4)]+0.1)
-xytext = (0.5, loss[find_idx_by_x(Xs, 0.2)] + 0.1)
+xytext = (0.5, loss[find_idx_by_x(Xs, 0.4)] + 1.0)
 arrowprops = dict(facecolor=mce_line[0].get_color(), shrink=0.05)
 marginal_ce_ax.annotate(f"${cmce_tex}$", zorder=10, xy=xy, xytext=xytext, arrowprops=arrowprops, verticalalignment='center', horizontalalignment='center', color=mce_line[0].get_color())
 
@@ -160,7 +160,7 @@ marginal_ce_ax.set_ylabel(f'$1 {unit_tex}$')
 marginal_ce_ax.legend()
 marginal_ce_ax.set_xticklabels(new_tick_labels)
 marginal_ce_ax.get_xticklabels()[-2].set_fontsize(24)
-marginal_ce_ax.set_title("Marginal & Joint Cross-Entropy") 
+marginal_ce_ax.set_title("Conditional & Joint Marginal Cross-Entropies") 
 
 # Right plot: Marginal likelihood as area under conditional training loss
 # Here we need to add some noise to the loss because we look at individual samples
@@ -173,7 +173,7 @@ noised_loss = loss - scaled_noise
 
 marginal_likelihoood_ax.plot(Xs, noised_loss, zorder=4-i, color="C2", label="Conditional Marginal Likelihood")
 xy = (0.6, noised_loss[find_idx_by_x(Xs, 0.6)]+0.1)
-xytext = (0.4, noised_loss[find_idx_by_x(Xs, 0.2)] + 0.1)
+xytext = (0.4, noised_loss[find_idx_by_x(Xs, 0.6)] + 1.0)
 arrowprops = dict(facecolor='C2', shrink=0.05)
 marginal_likelihoood_ax.annotate(f"${clml_tex}$", zorder=10, xy=xy, xytext=xytext, arrowprops=arrowprops, verticalalignment='center', horizontalalignment='left', color="C2")
 
@@ -186,9 +186,9 @@ marginal_likelihoood_ax.legend()
 
 marginal_likelihoood_ax.set_xticklabels(new_tick_labels)
 marginal_likelihoood_ax.get_xticklabels()[-2].set_fontsize(24)
-marginal_likelihoood_ax.set_title("Marginal Likelihood & Conditional Marginal Log Likelihood") 
+marginal_likelihoood_ax.set_title("Conditional & Joint Marginal Log Likelihood") 
 
-plt.suptitle("Chain Rule: Joint Quantities as Area under the Marginals")
+plt.suptitle("Chain Rule: Joint Quantities as Area under the Curve")
 
 # # Simulate a larger batch size. 
 # batch_size = 512
@@ -202,8 +202,8 @@ plt.suptitle("Chain Rule: Joint Quantities as Area under the Marginals")
 
 plt.tight_layout()
 # Save as SVG
-plt.savefig("area_under_curve.svg")
-plt.savefig("area_under_curve.png")
+plt.savefig(f"area_under_curve_{x_power:0.2f}.svg")
+plt.savefig(f"area_under_curve_{x_power:0.2f}.png")
 plt.show()
 
 # %%
