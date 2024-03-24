@@ -28,7 +28,7 @@ def get_multiclass_ce(num_classes, best_accuracy: float | None =None):
     p = np.array([residual/(num_classes-1)]*(num_classes-1) + [best_accuracy])
     return multinomial.entropy(1, p) * nats_to_bits
 
-N_factor = 12000
+N_factor = 30000
 
 def simulate_loss(factor, N, initial_loss, best_loss):
     return np.exp(-factor * N / N_factor) * (initial_loss - best_loss) + best_loss
@@ -36,7 +36,7 @@ def simulate_loss(factor, N, initial_loss, best_loss):
 # Setup dataset sizes to sample from and x to plot against.
 Xs = np.linspace(0, 1, 1000)
 
-x_power = 1
+x_power = 2/3
 # We want N to run from 1 to infinity for the range of x values
 Ns = (1 / (1 - Xs)**(1/x_power) - 1) * N_factor
 
@@ -99,9 +99,9 @@ prior_data_conflict_ax.set_title("Prior-Data Conflict")
 
 # Right plot: misspecified models plot
 
-for i, best_model_accuracy in zip(range(1, 4), [0.94, 0.86, 0.89]):
+for i, (loss_factor, best_model_accuracy) in enumerate(zip(np.linspace(1.25, 2., 3), [0.86, 0.89, 0.94])):
     best_model_loss = get_multiclass_ce(num_classes, best_model_accuracy)
-    loss = simulate_loss(i, Ns, initial_loss, best_model_loss)
+    loss = simulate_loss(loss_factor, Ns, initial_loss, best_model_loss)
     model_misspecification_ax.plot(Xs, loss, zorder=4-i, label=rf"$\phi_{i}$")
 model_misspecification_ax.legend()
 
