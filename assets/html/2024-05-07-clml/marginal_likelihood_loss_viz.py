@@ -7,10 +7,10 @@ plt.xkcd()
 
 # Define the number of subplots
 n_rows, n_cols = 1, 2
-fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 15/1.75/1.6), squeeze=False)
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 15/2.25/1.6*1.2), squeeze=False)
 
-prior_data_conflict_ax = axes[0,0]
-model_misspecification_ax = axes[0,1]
+prior_data_conflict_ax = axes[0,1]
+model_misspecification_ax = axes[0,0]
 
 # cmce_tex = r"\operatorname{H}_{\hat{\mathrm{p}} \Vert \mathrm{p}(\cdot \mid \Phi)}[X_N | X_{N-1}, ..., X_1]"
 cmce_tex = r"\operatorname{H}({\hat{\mathrm{p}} \Vert \mathrm{p}(\circ \mid \phi_\circ)})[X_N | X_{N-1}, ..., X_1]"
@@ -28,26 +28,31 @@ def get_multiclass_ce(num_classes, best_accuracy: float | None =None):
     p = np.array([residual/(num_classes-1)]*(num_classes-1) + [best_accuracy])
     return multinomial.entropy(1, p) * nats_to_bits
 
-N_factor = 30000
+def simulate_loss(factor, N, initial_loss, best_loss, N_factor: float):
+    return np.power(0.01, factor * N / N_factor) * (initial_loss - best_loss) + best_loss
 
-def simulate_loss(factor, N, initial_loss, best_loss):
-    return np.exp(-factor * N / N_factor) * (initial_loss - best_loss) + best_loss
+def get_N_x_mapping(x_power: float, N_factor: float):
+    def N_to_x(N):
+        return 1 - 1 / (1 + N / N_factor)**x_power
 
-# Setup dataset sizes to sample from and x to plot against.
-Xs = np.linspace(0, 1, 1000)
+    def x_to_N(x):
+        return (1 / (1 - x)**(1/x_power) - 1) * N_factor
 
+    def test_N_to_x_x_to_N():
+        # Setup dataset sizes to sample from and x to plot against.
+        Ns = np.linspace(0, 1, 1000)    
+        Xs = N_to_x(Ns)
+        assert np.allclose(x_to_N(Xs), Ns)
+        assert np.allclose(N_to_x(Ns), Xs)
+        
+    test_N_to_x_x_to_N() 
+    
+    return N_to_x, x_to_N
+
+N_factor = 55000
 x_power = 2/3
-# We want N to run from 1 to infinity for the range of x values
-Ns = (1 / (1 - Xs)**(1/x_power) - 1) * N_factor
 
-def N_to_x(N):
-    return 1 - 1 / (1 + N / N_factor)**x_power
-
-def x_to_N(x):
-    return (1 / (1 - x)**(1/x_power) - 1) * N_factor
-
-assert np.allclose(N_to_x(Ns), Xs)
-assert np.allclose(x_to_N(Xs), Ns)
+N_to_x, x_to_N = get_N_x_mapping(x_power=x_power, N_factor=N_factor)
 
 Ns = np.arange(0, 48000, 4)
 Xs = N_to_x(Ns)
@@ -65,22 +70,6 @@ def find_idx_by_x(Xs, x):
     idx = np.searchsorted(Xs, x)
     return idx
 
-# Left plot: same loss in infinite sample limit
-num_classes = 10
-best_loss = get_multiclass_ce(num_classes, 0.96)
-initial_loss = get_multiclass_ce(num_classes)
-
-for i in range(1, 4):
-    loss = simulate_loss(i, Ns, initial_loss, best_loss)
-    prior_data_conflict_ax.plot(Xs, loss, zorder=4-i, label=rf"$\phi_{i}$")
-
-prior_data_conflict_ax.legend()
-prior_data_conflict_ax.set_xlabel('Dataset size N')
-prior_data_conflict_ax.set_ylabel(f'${cmce_tex} {unit_tex}$')
-
-# Get current ticks
-current_ticks = prior_data_conflict_ax.get_xticks()
-
 def get_tick_label(x):
     match x:
         case x if x < 0:
@@ -90,26 +79,23 @@ def get_tick_label(x):
         case _:
             return f"{int(x_to_N(x))}"
 
-        
-new_tick_labels = [get_tick_label(x) for x in current_ticks]
-prior_data_conflict_ax.set_xticklabels(new_tick_labels)
-prior_data_conflict_ax.get_xticklabels()[-2].set_fontsize(24)
+# Left plot: misspecified models plot
 
-prior_data_conflict_ax.set_title("Prior-Data Conflict") 
-
-# Right plot: misspecified models plot
-
-for i, (loss_factor, best_model_accuracy) in enumerate(zip(np.linspace(1.25, 2., 3), [0.86, 0.89, 0.94])):
+for i, (loss_factor, best_model_accuracy) in enumerate(zip([1,1,1], [0.80, 0.89, 0.94])):
     best_model_loss = get_multiclass_ce(num_classes, best_model_accuracy)
-    loss = simulate_loss(loss_factor, Ns, initial_loss, best_model_loss)
+    loss = simulate_loss(loss_factor, Ns, initial_loss, best_model_loss, N_factor)
     model_misspecification_ax.plot(Xs, loss, zorder=4-i, label=rf"$\phi_{i}$")
 model_misspecification_ax.legend()
 
+# Get current ticks
+current_ticks = prior_data_conflict_ax.get_xticks()
+new_tick_labels = [get_tick_label(x) for x in current_ticks]
 model_misspecification_ax.set_xticklabels(new_tick_labels)
 model_misspecification_ax.get_xticklabels()[-2].set_fontsize(24)
 
 model_misspecification_ax.set_title("Model Misspecification") 
 model_misspecification_ax.set_xlabel('Dataset size N')
+model_misspecification_ax.set_ylabel(f'${cmce_tex} {unit_tex}$')
 
 plt.suptitle(cmce_title)
 # Adjust layout and display the plot
@@ -119,8 +105,71 @@ plt.tight_layout()
 plt.savefig(f"prior_conflict_and_model_misspecification_{x_power:0.2f}.svg")
 plt.savefig(f"prior_conflict_and_model_misspecification_{x_power:0.2f}.png")
 
+# Right plot: same loss in infinite sample limit
+num_classes = 10
+best_loss = get_multiclass_ce(num_classes, 0.96)
+initial_loss = get_multiclass_ce(num_classes)
+
+for i, loss_factor in enumerate([0.75, 1.25, 2.0]):
+    loss = simulate_loss(loss_factor, Ns, initial_loss, best_loss, N_factor)
+    prior_data_conflict_ax.plot(Xs, loss, zorder=4-i, label=rf"$\phi_{i}$")
+
+prior_data_conflict_ax.legend()
+prior_data_conflict_ax.set_xlabel('Dataset size N')
+
+prior_data_conflict_ax.set_xticklabels(new_tick_labels)
+prior_data_conflict_ax.get_xticklabels()[-2].set_fontsize(24)
+
+prior_data_conflict_ax.set_title("Prior-Data Conflict") 
+
+
 plt.show()
 
+#%% Create another plot that has both a data-prior conflict and misspecification
+
+# Define the number of subplots
+n_rows, n_cols = 1, 1
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(15/2, 15/2.25/1.6*1.2), squeeze=False)
+
+combined_ax = axes[0,0]
+
+N_factor = 60000
+x_power = 1.3
+
+N_to_x, x_to_N = get_N_x_mapping(x_power=x_power, N_factor=N_factor)
+
+Ns = np.arange(0, 60000, 4)
+Xs = N_to_x(Ns)
+# Concat a linrange from max(x) to 1
+Xs = np.concatenate([Xs, np.linspace(1, Xs[-1], 1000, endpoint=False)[::-1]])
+Ns = x_to_N(Xs)
+
+for i, (loss_factor, best_model_accuracy) in enumerate(zip([0.5, 1.0, 3.0], [0.94, 0.89, 0.8])):
+    best_model_loss = get_multiclass_ce(num_classes, best_model_accuracy)
+    loss = simulate_loss(loss_factor/1.5, Ns, initial_loss, best_model_loss, N_factor)
+    combined_ax.plot(Xs, loss, zorder=4-i, label=rf"$\phi_{i}$")
+combined_ax.legend()
+
+# Get current ticks
+current_ticks = combined_ax.get_xticks()
+new_tick_labels = [get_tick_label(x) for x in current_ticks]
+combined_ax.set_xticklabels(new_tick_labels)
+combined_ax.get_xticklabels()[-2].set_fontsize(24)
+
+# combined_ax.set_title("Model Misspecification") 
+combined_ax.set_xlabel('Dataset size N')
+combined_ax.set_ylabel(f'${cmce_tex} {unit_tex}$')
+
+combined_ax.set_title("# Samples vs Conditional Marginal Cross-Entropy")
+plt.suptitle("Anti-Correlated Prior-Data Conflict & Model Misspecification")
+# Adjust layout and display the plot
+plt.tight_layout()
+
+# Save as SVG
+plt.savefig(f"anticorrelated_prior_conflict_and_model_misspecification_{x_power:0.2f}.svg")
+plt.savefig(f"anticorrelated_prior_conflict_and_model_misspecification_{x_power:0.2f}.png")
+
+plt.show()
 
 #%%
 ## Create another figure with two plots that visualize:
@@ -131,10 +180,21 @@ plt.show()
 
 # Define the number of subplots
 n_rows, n_cols = 1, 2
-fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 15/1.75/1.6), squeeze=False)
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 15/2.25/1.6*1.2), squeeze=False)
 
 marginal_ce_ax = axes[0,0]
 marginal_likelihoood_ax = axes[0,1]
+
+N_factor = 55000
+x_power = 1.0
+
+N_to_x, x_to_N = get_N_x_mapping(x_power=x_power, N_factor=N_factor)
+
+Ns = np.arange(0, 48000, 16)
+Xs = N_to_x(Ns)
+# Concat a linrange from max(x) to 1
+Xs = np.concatenate([Xs, np.linspace(1, Xs[-1], 1000, endpoint=False)[::-1]])
+Ns = x_to_N(Xs)
 
 jce_tex = r"\operatorname{H}(\hat{\mathrm{p}} \Vert \mathrm{p}(\cdot \mid \phi))[X_N, X_{N-1}, ..., X_1]"
 clml_tex = r"\operatorname{H}(\mathrm{p}(x_N \mid x_{N-1}, ..., x_1, \phi))"
@@ -144,7 +204,7 @@ cmce_tex = r"\operatorname{H}({\hat{\mathrm{p}} \Vert \mathrm{p}(\circ \mid \phi
 # Left plot: joint cross-entropy as area under marginal cross-entropy
 phi_accuracy = 0.92
 phi_loss = get_multiclass_ce(num_classes, phi_accuracy)
-loss = simulate_loss(2, Ns, initial_loss, phi_loss)
+loss = simulate_loss(1, Ns, initial_loss, phi_loss, N_factor)
 mce_line = marginal_ce_ax.plot(Xs, loss, zorder=4-i, color="C0", label="Conditional Marginal Cross-Entropy")
 # marginal_ce_ax.text(20, loss[20], f"$\phi$", verticalalignment='bottom', horizontalalignment='left', c=mce_line[0].get_color())
 xy = (0.4, loss[find_idx_by_x(Xs, 0.4)]+0.1)
@@ -158,6 +218,8 @@ marginal_ce_ax.text(0.5, phi_loss/2, f"${jce_tex}$", verticalalignment='center',
 marginal_ce_ax.set_xlabel('Dataset size N')
 marginal_ce_ax.set_ylabel(f'$1 {unit_tex}$')
 marginal_ce_ax.legend()
+current_ticks = marginal_ce_ax.get_xticks()
+new_tick_labels = [get_tick_label(x) for x in current_ticks]
 marginal_ce_ax.set_xticklabels(new_tick_labels)
 marginal_ce_ax.get_xticklabels()[-2].set_fontsize(24)
 marginal_ce_ax.set_title("Conditional & Joint Marginal Cross-Entropies") 
