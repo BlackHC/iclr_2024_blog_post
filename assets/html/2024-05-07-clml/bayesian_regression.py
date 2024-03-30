@@ -189,6 +189,7 @@ experiment_bases = [
 
 num_trials = 5
 
+#%%
 for experiment_base in experiment_bases:
     # Check if the experiment base is already exists in the experiment_losses
     if str(experiment_base) in experiment_losses:
@@ -256,6 +257,12 @@ import pickle
 
 with open('bayesian_regression_results.pkl', 'wb') as f:
     pickle.dump(experiment_losses, f)
+    
+#%% Load the experiment losses from a file
+import pickle
+
+with open('bayesian_regression_results.pkl', 'rb') as f:
+    experiment_losses = pickle.load(f)
     
 #%%
 
@@ -410,7 +417,7 @@ import matplotlib.colors as colors
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.style.use('tableau-colorblind10')
 
-fig, ax = plt.subplots(figsize=(6, 6/1.6))
+fig, ax = plt.subplots(figsize=(6/1.6, 6/1.6))
 cmap = plt.cm.get_cmap('tab10', 10)
 cmap.set_bad('none')
 
