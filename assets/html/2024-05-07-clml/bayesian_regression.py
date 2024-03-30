@@ -234,8 +234,8 @@ for experiment_base in experiment_bases:
         for size in sizes:
             # Copy the experiment base
             reg = deepcopy(experiment_base)
-            
-            jmi = reg.joint_marginal_information(X_train_perm[:size], y_train_perm[:size])
+        
+            jmi = reg.joint_marginal_information(X_train_perm[:size], y_train_perm[:size], mean=False)
     
             # Train on the current subset of data
             reg.fit(X_train_perm[:size], y_train_perm[:size])
@@ -256,6 +256,31 @@ import pickle
 
 with open('bayesian_regression_results.pkl', 'wb') as f:
     pickle.dump(experiment_losses, f)
+    
+#%%
+
+for experiment_base in experiment_bases:
+    experiment_losses[str(experiment_base)]['conditional_joint_marginal_information_half'] = {}
+    for trial in tqdm(range(num_trials)):
+        experiment_losses[str(experiment_base)]['conditional_joint_marginal_information_half'][trial] = {}
+        for size in sizes:
+            if size <= 1:
+                continue
+            
+            experiment_losses[str(experiment_base)]['conditional_joint_marginal_information_half'][trial][size] = experiment_losses[str(experiment_base)]['joint_marginal_information'][trial][size] - experiment_losses[str(experiment_base)]['joint_marginal_information'][trial][size//2]
+    
+#%% Add joint_marginal_information_rate
+
+for experiment_base in experiment_bases:
+    experiment_losses[str(experiment_base)]['joint_marginal_information_rate'] = {}
+    for trial in tqdm(range(num_trials)):
+        experiment_losses[str(experiment_base)]['joint_marginal_information_rate'][trial] = {}
+        for size in sizes:
+            if size == 0:
+                continue
+            
+            experiment_losses[str(experiment_base)]['joint_marginal_information_rate'][trial][size] = experiment_losses[str(experiment_base)]['joint_marginal_information'][trial][size] / size
+    
     
 #%% Turn the experiment losses into a DataFrame
 import pandas as pd
@@ -345,51 +370,139 @@ df['size'] = pd.to_numeric(df['size'], errors='coerce')
 # Reorder the columns
 df = df[['experiment_base', 'trial', 'size', 'metric', 'value']]
 
-print(df)
+#%%
+# Step 1: Filter the DataFrame for joint_marginal_information
+jmi_df = df[df['metric'] == 'joint_marginal_information'].copy()
 
-#%% Plot the metrics
-import seaborn as sns
+# Step 2: Pivot the DataFrame
+pivot_df = jmi_df.pivot_table(index=['trial', 'size'], columns='experiment_base', values='value')
 
-sns.set_theme(style="whitegrid")
-
-# Plot the metrics
-g = sns.FacetGrid(df, col="metric", col_wrap=3, margin_titles=True, sharey=False)
-g.map(sns.lineplot, "size", "value", "experiment_base")
-# set log on y axis
-g.set(yscale="log")
-g.set_axis_labels("Dataset Size", "Value")
-g.add_legend()
-g.set_titles("{col_name}")
-g.set_xlabels("Dataset Size")
-g.set_ylabels("Value")
+# Step 3: Convert to numpy array
+jmi_trials = pivot_df.to_numpy()
+jmi_trials.shape
+#%%
+jmi_trials = jmi_trials.reshape(num_trials, len(sizes), len(experiment_bases))
+jmi_array = jmi_trials.mean(axis=0)
+#%%
+#%% 
+# Step 4: Take differences with different periods
+result_array = np.zeros((len(sizes), len(sizes), len(experiment_bases)))
+for base in range(len(experiment_bases)):
+    for T in range(1, len(sizes)):
+        for t in range(len(sizes)):
+            if t < T:
+                result_array[t,T, base] = np.nan
+            else: 
+                result_array[t,T, base] = jmi_array[t,base] - jmi_array[t-T, base]
 
 #%%
-# Plot the losses
-plt.figure(figsize=(12, 6))
-for key, loss in experiment_losses.items():
-    plt.plot(sizes, loss, label=key)
+# Step 5: Pick the argmin for each base
+# result_winner.fill(np.nan)
+result_winner = np.argmin(result_array, axis=-1) + 0.0
+result_winner[np.isnan(result_array[...,0])] = np.nan
+result_winner
+#%%
+import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib.colors as colors
 
-plt.yscale('log')
-plt.xlabel('Dataset size')
-plt.ylabel('Loss (MSE)')
-plt.title('Loss vs. Dataset Size for Different Hyperparameters')
-plt.legend()
-plt.xlim(1, 500)
+# Set white theme in seaborn
+plt.style.use('seaborn-v0_8-whitegrid')
+plt.style.use('tableau-colorblind10')
+
+fig, ax = plt.subplots(figsize=(6, 6/1.6))
+cmap = plt.cm.get_cmap('tab10', 10)
+cmap.set_bad('none')
+
+
+bounds = np.array([-0.5, 0.5, 1.5, 2.5])
+norm = colors.BoundaryNorm(boundaries=bounds, ncolors=3)
+im = ax.matshow(result_winner[:,:].T, cmap=cmap, norm=norm, origin='lower')
+
+# Draw a 0.5 white line with slop 0.5
+# This line shows where conditional_joint_marginal_information_half lies
+ax.plot([0, len(sizes)], [0, len(sizes)//2], color='white', lw=1, alpha=0.5)
+
+# Add a legend with the 3 experiments
+# C0 is the first experiment, C1 is the second experiment, C2 is the third experiment
+handles = [plt.Rectangle((0, 0), 1, 1, color=cmap.colors[0], label=r'$\phi_1$'),
+           plt.Rectangle((0, 0), 1, 1, color=cmap.colors[1], label=r'$\phi_2$'),
+           plt.Rectangle((0, 0), 1, 1, color=cmap.colors[2], label=r'$\phi_3$')]
+ax.legend(handles=handles, title=r'Model $\Phi$', loc='upper left')
+
+# Move the ticks to the bottom
+ax.xaxis.set_ticks_position('bottom')
+
+ax.set_xlabel('Dataset Size')
+ax.set_ylabel('Held-Back Size')
+
+# Turn off the frame and add a color bar
+ax.spines[:].set_visible(False)
+
+# Save as svg
+plt.savefig('binary_regression_conditional_joint_marginal_information_decision_boundary.svg', format='svg', dpi=300)
+plt.savefig('binary_regression_conditional_joint_marginal_information_decision_boundary.png', format='png', dpi=300)
+
+plt.show()
+
+#%% Plot the metrics
+
+plt.figure(figsize=(12, 12/1.6))
+
+sns.set_context("paper")
+sns.set_style("whitegrid")
+# sns.set_color_codes("colorblind")
+sns.set_palette("tab10")
+
+sub_df = df
+# sub_df = sub_df.sample(2000)
+sub_df = sub_df[sub_df['metric'].isin(['joint_marginal_information', 'marginal_cross_entropy_train', 'marginal_cross_entropy_val', 'iterative_train_loss', 'conditional_joint_marginal_information_half', 'joint_marginal_information_rate'])]
+sub_df = sub_df.copy()
+# Map experiment base to the previous legend
+experiment_base_map = {
+    'BayesianLinearModel(phi=0.1, sigma_noise=0.8)': r'$\phi_1$',
+    'BayesianLinearModel(phi=100, sigma_noise=1.0)': r'$\phi_2$',
+    'BayesianLinearModel(phi=1, sigma_noise=1.2)': r'$\phi_3$'
+}
+legend_title = r'Model'
+sub_df[legend_title] = sub_df['experiment_base'].map(experiment_base_map)
+
+# Map the metric to readable names
+metric_map = {
+    'marginal_cross_entropy_val': 'Marginal Cross-Entropy (Validation)',
+    'marginal_cross_entropy_train': 'Marginal Cross-Entropy (Train)',
+    'iterative_train_loss': 'Training Speed (Approx)',
+    'joint_marginal_information': 'Joint Marginal Information',
+    'joint_marginal_information_rate': 'Joint Marginal Information Rate',
+    'conditional_joint_marginal_information_half': 'Conditional Joint Marginal Information (Half)',
+}
+sub_df['metric'] = sub_df['metric'].map(metric_map)
+
+sub_df['value'] = sub_df['value'] / np.log(2)
+
+# Plot the metrics
+g = sns.FacetGrid(sub_df, col="metric", col_wrap=3, margin_titles=True, sharey=False, col_order=metric_map.values())
+g.map(sns.lineplot, "size", "value", legend_title, hue_order=experiment_base_map.values())
+# set log on y axis
+g.set(yscale="log")
+unit_tex = r"$\mathrm{ / bits}$" 
+down_arrow = r"$\downarrow$"
+g.set_axis_labels("Dataset Size", f"Information {unit_tex} {down_arrow}")
+g.add_legend(loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=3)
+g.set_titles("{col_name}")
+# Set constraint engine to avoid overlapping titles
+g.fig.tight_layout()
+# Set overall title for the plot
+plt.subplots_adjust(top=0.9)
+g.fig.suptitle('Information Metrics for Different Bayesian Linear Models')
+
+# Save as svg
+plt.savefig('binary_regression_information_metrics.svg', format='svg', dpi=300)
+plt.savefig('binary_regression_information_metrics.png', format='png', dpi=300)
 plt.show()
 
 # %%
 """
-Ridge with different alphas works! BayesianRidge optimizes the hyperparameters first using marginal liklihood.
-
-Further:
-
-['Ridge(alpha=0.01) with noise std=0.0',
- 'Ridge(alpha=0.01) with noise std=0.5',
- 'Ridge(alpha=0.01) with noise std=0.3',
- 'Ridge(alpha=10) with noise std=0.3',
- 'Ridge(alpha=1) with noise std=0.3',
- 'Ridge(alpha=0.1) with noise std=0.3',
- 'Ridge(alpha=0.1) with noise std=0.1']
+Figure 1: Decision boundary for the model with the lowest conditional joint marginal information, as a function of dataset size and held-back size. The three models $\phi_1$, $\phi_2$, and $\phi_3$ correspond to different prior precisions in the Bayesian linear regression. The white diagonal line shows where the conditional joint marginal information is computed using half the dataset size. In the region below this line, $\phi_1$ (blue) has the lowest conditional joint marginal information, while above the line $\phi_2$ (orange) and $\phi_3$ (green) are preferred for different dataset and held-back sizes.
+Figure 2: Information metrics for the three Bayesian linear regression models as a function of dataset size. The joint marginal information and conditional joint marginal information (with half the dataset size) decrease with more data, showing the models are learning. The joint marginal information rate normalizes for dataset size. The marginal cross-entropy on the train and validation sets also decreases with more data, indicating improved generalization. Model $\phi_1$ (blue) has the highest information metrics, while models $\phi_2$ (orange) and $\phi_3$ (green) are fairly similar. All metrics are reported in bits (log base 2).
 """
-
-
