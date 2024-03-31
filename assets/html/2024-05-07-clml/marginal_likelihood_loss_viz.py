@@ -210,7 +210,7 @@ xytext = (0.5, loss[find_idx_by_x(Xs, 0.4)] + 1.0)
 arrowprops = dict(facecolor=mce_line[0].get_color(), shrink=0.05)
 marginal_ce_ax.annotate(f"${cmce_tex}$", zorder=10, xy=xy, xytext=xytext, arrowprops=arrowprops, verticalalignment='center', horizontalalignment='center', color=mce_line[0].get_color())
 
-marginal_ce_ax.fill_between(Xs, np.zeros_like(loss), loss, alpha=0.2, zorder=-1, label=f"Joint Cross-Entropy", color="C1")
+marginal_ce_ax.fill_between(Xs, np.zeros_like(loss), loss, alpha=0.2, zorder=-1, label=f"Joint Marginal Cross-Entropy", color="C1")
 marginal_ce_ax.text(0.5, phi_loss/2, f"${jce_tex}$", verticalalignment='center', horizontalalignment='center', color="k")
 
 marginal_ce_ax.set_xlabel('Dataset size N')
@@ -231,13 +231,13 @@ noise_scale = 0.1 / (Ns+1)**0.4
 scaled_noise = np.random.gumbel(0, noise_scale, len(loss))
 noised_loss = loss - scaled_noise
 
-marginal_likelihoood_ax.plot(Xs, noised_loss, zorder=4-i, color="C2", label="Conditional Marginal Likelihood")
+marginal_likelihoood_ax.plot(Xs, noised_loss, zorder=4-i, color="C2", label="Conditional Marginal Information")
 xy = (0.6, noised_loss[find_idx_by_x(Xs, 0.6)]+0.1)
 xytext = (0.4, noised_loss[find_idx_by_x(Xs, 0.6)] + 1.0)
 arrowprops = dict(facecolor='C2', shrink=0.05)
 marginal_likelihoood_ax.annotate(f"${clml_tex}$", zorder=10, xy=xy, xytext=xytext, arrowprops=arrowprops, verticalalignment='center', horizontalalignment='left', color="C2")
 
-marginal_likelihoood_ax.fill_between(Xs, np.zeros_like(noised_loss), noised_loss, zorder=-1, alpha=0.2, label=f"Marginal Likelihood", color="C3")
+marginal_likelihoood_ax.fill_between(Xs, np.zeros_like(noised_loss), noised_loss, zorder=-1, alpha=0.2, label=f"Joint Marginal Information", color="C3")
 marginal_likelihoood_ax.text(0.5, phi_loss/2, f"${lml_tex}$", verticalalignment='center', horizontalalignment='center', color="k")
 
 marginal_likelihoood_ax.set_xlabel('Dataset size N')
