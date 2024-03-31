@@ -49,7 +49,7 @@ def get_N_x_mapping(x_power: float, N_factor: float):
     
     return N_to_x, x_to_N
 
-N_factor = 55000
+N_factor = 50000
 x_power = 2/3
 
 N_to_x, x_to_N = get_N_x_mapping(x_power=x_power, N_factor=N_factor)
@@ -79,8 +79,11 @@ def get_tick_label(x):
         case _:
             return f"{int(x_to_N(x))}"
 
-# Left plot: misspecified models plot
+num_classes = 10
+best_loss = get_multiclass_ce(num_classes, 0.96)
+initial_loss = get_multiclass_ce(num_classes)
 
+# Left plot: misspecified models plot
 for i, (loss_factor, best_model_accuracy) in enumerate(zip([1,1,1], [0.80, 0.89, 0.94])):
     best_model_loss = get_multiclass_ce(num_classes, best_model_accuracy)
     loss = simulate_loss(loss_factor, Ns, initial_loss, best_model_loss, N_factor)
@@ -97,19 +100,7 @@ model_misspecification_ax.set_title("Model Misspecification")
 model_misspecification_ax.set_xlabel('Dataset size N')
 model_misspecification_ax.set_ylabel(f'${cmce_tex} {unit_tex}$')
 
-plt.suptitle(cmce_title)
-# Adjust layout and display the plot
-plt.tight_layout()
-
-# Save as SVG
-plt.savefig(f"prior_conflict_and_model_misspecification_{x_power:0.2f}.svg")
-plt.savefig(f"prior_conflict_and_model_misspecification_{x_power:0.2f}.png")
-
 # Right plot: same loss in infinite sample limit
-num_classes = 10
-best_loss = get_multiclass_ce(num_classes, 0.96)
-initial_loss = get_multiclass_ce(num_classes)
-
 for i, loss_factor in enumerate([0.75, 1.25, 2.0]):
     loss = simulate_loss(loss_factor, Ns, initial_loss, best_loss, N_factor)
     prior_data_conflict_ax.plot(Xs, loss, zorder=4-i, label=rf"$\phi_{i}$")
@@ -122,6 +113,13 @@ prior_data_conflict_ax.get_xticklabels()[-2].set_fontsize(24)
 
 prior_data_conflict_ax.set_title("Prior-Data Conflict") 
 
+plt.suptitle(cmce_title)
+# Adjust layout and display the plot
+plt.tight_layout()
+
+# Save as SVG
+plt.savefig(f"prior_conflict_and_model_misspecification_{x_power:0.2f}.svg")
+plt.savefig(f"prior_conflict_and_model_misspecification_{x_power:0.2f}.png")
 
 plt.show()
 
