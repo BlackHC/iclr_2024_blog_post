@@ -1,0 +1,259 @@
+\documentclass[25pt,a0paper,landscape]{tikzposter}
+\usetheme{Board}
+\usepackage[utf8]{inputenc}
+\usepackage{xurl}
+\usepackage{amsmath,amssymb}
+% \usepackage{iftex}
+\usepackage{textcomp} % provide euro and other symbols
+\usepackage{lmodern}
+% % Use upquote if available, for straight quotes in verbatim environments
+% \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% \IfFileExists{microtype.sty}{% use microtype if available
+%   \usepackage[]{microtype}
+%   \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+% }{}
+% \makeatletter
+% \@ifundefined{KOMAClassName}{% if non-KOMA class
+%   \IfFileExists{parskip.sty}{%
+%     \usepackage{parskip}
+%   }{% else
+%     \setlength{\parindent}{0pt}
+%     \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+% }{% if KOMA class
+%   \KOMAoptions{parskip=half}}
+% \makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{amsmath,amsfonts,amssymb,amsthm,bm}
+\usepackage{mathtools}
+\DeclareMathOperator{\opExpectation}{\mathbb{E}}
+\newcommand{\E}[2]{\opExpectation_{#1} \left [ #2 \right ]}
+\newcommand{\simpleE}[1]{\opExpectation_{#1}}
+\newcommand{\MidSymbol}[1][]{\:#1\:}
+\newcommand{\given}{\MidSymbol[\vert]}
+\DeclareMathOperator{\opmus}{\mu^*}
+\newcommand{\IMof}[1]{\opmus[#1]}
+\DeclareMathOperator{\opInformationContent}{H}
+\newcommand{\ICof}[1]{\opInformationContent[#1]}
+\newcommand{\xICof}[1]{\opInformationContent(#1)}
+\DeclareMathOperator{\opEntropy}{H}
+\newcommand{\Hof}[1]{\opEntropy[#1]}
+\newcommand{\xHof}[1]{\opEntropy(#1)}
+
+\DeclareMathOperator{\opMI}{I}
+\newcommand{\MIof}[1]{\opMI[#1]}
+\DeclareMathOperator{\opTC}{TC}
+\newcommand{\TCof}[1]{\opTC[#1]}
+\newcommand{\CrossEntropy}[2]{\opEntropy(#1 \MidSymbol[\Vert] #2)}
+\DeclareMathOperator{\opKale}{D_\mathrm{KL}}
+\newcommand{\Kale}[2]{\opKale(#1 \MidSymbol[\Vert] #2)}
+\DeclareMathOperator{\opJSD}{D_\mathrm{JSD}}
+\newcommand{\JSD}[2]{\opJSD(#1 \MidSymbol[\Vert] #2)}
+\newcommand{\opp}{\mathrm{p}}
+\newcommand{\pof}[1]{\opp(#1)}
+\newcommand{\hpof}[1]{\hat{\opp}(#1)}
+\newcommand{\pcof}[2]{\opp_{#1}(#2)}
+\newcommand{\hpcof}[2]{\hat\opp_{#1}(#2)}
+\newcommand{\opq}{\mathrm{q}}
+\newcommand{\qof}[1]{\opq(#1)}
+\newcommand{\hqof}[1]{\hat{\opq}(#1)}
+\newcommand{\qcof}[2]{\opq_{#1}(#2)}
+\newcommand{\varHof}[2]{\opEntropy_{#1}[#2]}
+\newcommand{\xvarHof}[2]{\opEntropy_{#1}(#2)}
+\newcommand{\varMIof}[2]{\opMI_{#1}[#2]}
+\newcommand{\w}{\boldsymbol{\theta}}
+\newcommand{\W}{\boldsymbol{\Theta}}
+\newcommand{\opf}{\mathrm{f}}
+\newcommand{\fof}[1]{\opf(#1)}
+\newcommand{\Dany}{\mathcal{D}}
+\newcommand{\y}{y}
+\newcommand{\Y}{Y}
+\newcommand{\Loss}{\boldsymbol{L}}
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\X}{\boldsymbol{X}}
+\newcommand{\pdata}[1]{\hpcof{\text{data}}{#1}}
+\newcommand{\normaldist}[1]{\mathcal{N}(#1)}
+\urlstyle{same}
+% \hypersetup{
+%   pdftitle={Bridging the Data Processing Inequality and Function-Space Variational Inference},
+%   pdfauthor={Andreas Kirsch, University of Oxford},
+%   hidelinks}
+
+\title{Bridging the Data Processing Inequality and Function-Space Variational Inference}
+\author{Andreas Kirsch}
+\institute{University of Oxford\textsuperscript{--2023}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{columns}
+\column{0.5}
+\block{Data Processing Inequalities}{
+\begin{multicols}{2}
+\begin{tcolorbox}[colback=green!5!white,colframe=teal!75!black,title=KL TK Data Processing Inequality]
+The DPI states that processing data stochastically can only reduce information. Formally, for distributions $\mathrm{q}(\boldsymbol{\Theta})$ and $\mathrm{p}(\boldsymbol{\Theta})$ over a random variable $\boldsymbol{\Theta}$ and a stochastic mapping $Y = \mathrm{f}(\boldsymbol{\Theta})$, the DPI is expressed as:
+
+$$\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta})) \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(Y) \:\Vert\: \mathrm{p}(Y))$$
+
+Equality holds when $\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}\:\vert\:Y) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta}\:\vert\:Y)) = 0$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=teal!75!black,title=Proof]
+Using the chain rule of the KL divergence:
+
+$$
+\begin{aligned}
+\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X, Y) \:\Vert\: \mathrm{q}(X, Y)) &= \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \\
+&+ \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y \:\vert\:X) \:\Vert\: \mathrm{q}(Y \:\vert\:X)),
+\end{aligned}
+$$
+
+and its symmetry, we have:
+
+$$
+\begin{aligned}
+&\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) + \underbrace{\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y\:\vert\:X) \:\Vert\: \mathrm{q}(Y \:\vert\:X))}_{=\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(Y\:\vert\:X) \:\Vert\: \mathrm{f}(Y \:\vert\:X))=0}\\
+&\quad =\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X, Y) \:\Vert\: \mathrm{q}(X, Y))\\
+&\quad =\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y))+\underbrace{\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X \:\vert\:Y) \:\Vert\: \mathrm{q}(X \:\vert\:Y))}_{\ge 0}\\
+&\quad \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
+\end{aligned}
+$$
+
+We have equality exactly when $\mathrm{p}(x \:\vert\:y) = \mathrm{q}(x \:\vert\:y)$ for (almost) all $x, y.$
+\end{tcolorbox}
+
+\columnbreak
+
+\begin{tcolorbox}[drop fuzzy shadow southeast,enhanced,colback=brown!5!orange!40!white, colframe=brown!80!black, boxrule=1pt, left=5pt, right=5pt, top=5pt, bottom=5pt]
+{\Large\emph{The data processing inequality states that if two random variables are transformed in this way, they cannot become easier to tell apart.}}
+\begin{flushright}
+``Understanding Variational Inference in Function-Space'', \\
+Burt et al. (2021)
+\end{flushright}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Example: Image Processing]
+Consider an image processing pipeline where $X$ is the original image, $Y$ is a compressed version, and $Z$ is $Y$ after adding blur and pixelation. The DPI tells us that $\mathop{\mathrm{I}}[X;Y] \ge \mathop{\mathrm{I}}[X;Z]$, as each processing step results in information loss.
+\end{tcolorbox}
+
+TK examples TK
+
+\end{multicols}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=teal!75!black,title=From KL to Jenson-Shannon Divergence to Mutual Information]
+
+\begin{multicols}{2}
+\subsubsection{Jensen-Shannon Divergence}
+
+The Jensen-Shannon divergence (JSD) makes the KL divergence symmetric:
+
+$$
+\begin{aligned}
+\mathrm{f}(x) &= \frac{\mathrm{p}(x) + \mathrm{q}(x)}{2}\\
+\mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(x) \:\Vert\: \mathrm{q}(x)) &= \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(x) \:\Vert\: \mathrm{f}(x)) + \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(x) \:\Vert\: \mathrm{f}(x)).
+\end{aligned}
+$$
+
+The square root of the Jensen-Shannon divergence, the \emph{Jensen-Shannon distance}, is symmetric, satisfies the triangle inequality and hence a metric.
+
+Given $\mathrm{p}(x)$ and $\mathrm{q}(x)$ and shared transition function $\mathrm{f}(y \:\vert\:x)$ for the model $X \rightarrow Y$, we obtain a Jensen-Shannon divergence data processing inequality by applying the KL DPI twice:
+
+$$
+\mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \ge \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
+$$
+
+\subsubsection{Mutual Information}
+
+For 
+$$
+\begin{aligned}
+Z &\sim \mathrm{Bernoulli}(\frac{1}{2}) = \mathrm{f}(Z) \\
+X \:\vert\:Z = 0 \sim \mathrm{p}(x) &\land X \:\vert\:Z = 1 \sim \mathrm{q}(x),
+\end{aligned}
+$$
+$$
+\begin{aligned}
+&\mathop{\mathrm{I}}[X;Z] = \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(X \:\vert\:Z) \:\Vert\: \mathrm{f}(X)) = \mathop{\mathrm{\mathbb{E}}}_{\mathrm{f}(z)} \left [ \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(X \:\vert\:Z = z) \:\Vert\: \mathrm{f}(X)) \right ]\\
+&= \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(x) \:\Vert\: \mathrm{f}(x)) + \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(x) \:\Vert\: \mathrm{f}(x))= \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)).
+\end{aligned}
+$$
+
+We can generalize this to the Markov chain $Z \rightarrow X \rightarrow Y$ with $\mathrm{f}(z, x, y) = \mathrm{f}(z) \mathrm{f}(x \:\vert\:z) \mathrm{f}(y \:\vert\:x)$ for any distribution $\mathrm{f}(z)$:
+
+$$
+\begin{aligned}
+\mathop{\mathrm{I}}[X;Z] &= \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(X \:\vert\:Z) \:\Vert\: \mathrm{f}(X)) = \mathop{\mathrm{\mathbb{E}}}_{\mathrm{f}(z)} \left [ \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(X \:\vert\:z) \:\Vert\: \mathrm{f}(X)) \right ]\\
+&\overset{(1)}{\ge} \mathop{\mathrm{\mathbb{E}}}_{\mathrm{f}(z)} \left [ \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(Y \:\vert\:z) \:\Vert\: \mathrm{f}(Y)) \right ] = \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(Y \:\vert\:Z) \:\Vert\: \mathrm{f}(Y))\\
+&= \mathop{\mathrm{I}}[Y;Z],
+\end{aligned}
+$$
+
+where $(1)$ follows from the KL data processing inequality. 
+%This is the data processing inequality for the mutual information.
+\end{multicols}
+\end{tcolorbox}
+}
+\column{0.5}
+\block{Function-Space Variational Inference}{
+}
+\end{columns}
+
+% \hypertarget{function-space-variational-inference}{%
+% \section{Function-Space Variational
+% Inference}\label{function-space-variational-inference}}
+
+% FSVI is a principled approach to Bayesian inference that respects the
+% inherent symmetries and equivalences in overparameterized models. It
+% approximates the posterior over equivalence classes of parameters
+% \(\mathrm{p}([\boldsymbol{\theta}] \:\vert\:\mathcal{D})\) using an
+% implicit variational distribution \(\mathrm{q}([\boldsymbol{\theta}])\).
+% FSVI minimizes
+% \(\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}([\boldsymbol{\Theta}]) \:\Vert\: \mathrm{p}([\boldsymbol{\Theta}] \:\vert\:\mathcal{D}))\),
+% which is invariant to parameter symmetries.
+
+% The FSVI-ELBO regularizes towards a data prior:
+% \[\mathop{\mathrm{\mathbb{E}}}_{\mathrm{q}(\boldsymbol{\theta})} \left [ -\log \mathrm{p}(\mathcal{D}\:\vert\:\boldsymbol{\theta}) \right ] + \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(Y... \:\vert\:\boldsymbol{x}...) \:\Vert\: \mathrm{p}(Y... \:\vert\:\boldsymbol{x}...))\]
+
+% \begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=FSVI and Parameter Symmetries]
+% FSVI sidesteps the need to explicitly define equivalence classes or specify a model that operates on them directly. By using an implicit variational distribution and leveraging the DPI, FSVI can approximate the meaningful posterior $\mathrm{p}([\boldsymbol{\theta}] \:\vert\:\mathcal{D})$ while avoiding the complexities of working with equivalence classes.
+% \end{tcolorbox}
+
+% \hypertarget{connecting-dpi-and-fsvi}{%
+% \section{Connecting DPI and FSVI}\label{connecting-dpi-and-fsvi}}
+
+% The connection between DPI and FSVI allows FSVI to measure a predictive
+% divergence independent of parameter symmetries. By matching predictive
+% priors in the limit of infinite data, FSVI effectively matches
+% posteriors over equivalence classes. This insight relates FSVI to label
+% entropy regularization and knowledge distillation.
+
+% \begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Relation to Other Methods]
+% The connection between DPI and FSVI highlights the practical relevance of these theoretical concepts. It shows how FSVI relates to training with knowledge distillation and label entropy regularization, providing a new perspective on these methods.
+% \end{tcolorbox}
+
+% \begin{multicols}{2}
+
+% Conclusion
+
+% The data processing inequality provides a powerful intuition about the limitations of information processing systems. Function-space variational inference respects inherent model symmetries by focusing on the predictive posterior. Examining the connection between DPI and FSVI offers valuable insights for both theory and practice in Bayesian deep learning.
+
+% Understanding this connection can guide the development of more principled and effective inference techniques. It highlights the importance of considering the function space and its equivalences, rather than solely focusing on the parameter space.
+
+% Future research could further explore the implications of this connection for topics such as active learning, model compression, and transfer learning. By leveraging the insights from DPI and FSVI, we can develop more robust and efficient machine learning methods.
+
+% \end{multicols}
+
+% \end{multicols}
+
+% \hypertarget{references}{%
+% \section{References}\label{references}}
+
+\end{document}
