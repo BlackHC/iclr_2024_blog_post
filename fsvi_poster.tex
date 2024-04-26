@@ -5,7 +5,7 @@
 \usepackage{amsmath,amssymb}
 % \usepackage{iftex}
 \usepackage{textcomp} % provide euro and other symbols
-\usepackage{lmodern}
+% \usepackage{lmodern}
 % % Use upquote if available, for straight quotes in verbatim environments
 % \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 % \IfFileExists{microtype.sty}{% use microtype if available
@@ -27,6 +27,7 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{tikz-cd}
 \usepackage{tcolorbox}
 \tcbuselibrary{skins}
 \usepackage{graphicx}
@@ -97,27 +98,21 @@
 \begin{columns}
 \column{0.5}
 \block{Data Processing Inequalities}{
-\begin{multicols}{2}
-\begin{tcolorbox}[colback=green!5!white,colframe=teal!75!black,title=KL TK Data Processing Inequality]
-The DPI states that processing data stochastically can only reduce information. Formally, for distributions $\mathrm{q}(\boldsymbol{\Theta})$ and $\mathrm{p}(\boldsymbol{\Theta})$ over a random variable $\boldsymbol{\Theta}$ and a stochastic mapping $Y = \mathrm{f}(\boldsymbol{\Theta})$, the DPI is expressed as:
-
-$$\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta})) \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(Y) \:\Vert\: \mathrm{p}(Y))$$
-
-Equality holds when $\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}\:\vert\:Y) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta}\:\vert\:Y)) = 0$.
+\begin{tcolorbox}[colback=green!5!white,colframe=teal!75!black,title=KL TK ]
+  Informally, the \textbf{Data Processing Inequality (DPI)} states that processing data stochastically can only reduce information. Formally, for distributions $\mathrm{q}(\boldsymbol{\Theta})$ and $\mathrm{p}(\boldsymbol{\Theta})$ over a random variable $\boldsymbol{\Theta}$ and a stochastic mapping $Y = \mathrm{f}(\boldsymbol{\Theta})$, the DPI is expressed as:
+  $$\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta})) \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(Y) \:\Vert\: \mathrm{p}(Y))$$
+  Equality holds when $\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}\:\vert\:Y) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta}\:\vert\:Y)) = 0$.
 \end{tcolorbox}
-
+\begin{multicols}{2}
 \begin{tcolorbox}[colback=green!5!white,colframe=teal!75!black,title=Proof]
 Using the chain rule of the KL divergence:
-
 $$
 \begin{aligned}
 \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X, Y) \:\Vert\: \mathrm{q}(X, Y)) &= \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \\
 &+ \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y \:\vert\:X) \:\Vert\: \mathrm{q}(Y \:\vert\:X)),
 \end{aligned}
 $$
-
 and its symmetry, we have:
-
 $$
 \begin{aligned}
 &\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) + \underbrace{\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y\:\vert\:X) \:\Vert\: \mathrm{q}(Y \:\vert\:X))}_{=\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(Y\:\vert\:X) \:\Vert\: \mathrm{f}(Y \:\vert\:X))=0}\\
@@ -126,7 +121,6 @@ $$
 &\quad \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
 \end{aligned}
 $$
-
 We have equality exactly when $\mathrm{p}(x \:\vert\:y) = \mathrm{q}(x \:\vert\:y)$ for (almost) all $x, y.$
 \end{tcolorbox}
 
@@ -154,18 +148,15 @@ TK examples TK
 \subsubsection{Jensen-Shannon Divergence}
 
 The Jensen-Shannon divergence (JSD) makes the KL divergence symmetric:
-
 $$
 \begin{aligned}
 \mathrm{f}(x) &= \frac{\mathrm{p}(x) + \mathrm{q}(x)}{2}\\
 \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(x) \:\Vert\: \mathrm{q}(x)) &= \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(x) \:\Vert\: \mathrm{f}(x)) + \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(x) \:\Vert\: \mathrm{f}(x)).
 \end{aligned}
 $$
-
 The square root of the Jensen-Shannon divergence, the \emph{Jensen-Shannon distance}, is symmetric, satisfies the triangle inequality and hence a metric.
 
 Given $\mathrm{p}(x)$ and $\mathrm{q}(x)$ and shared transition function $\mathrm{f}(y \:\vert\:x)$ for the model $X \rightarrow Y$, we obtain a Jensen-Shannon divergence data processing inequality by applying the KL DPI twice:
-
 $$
 \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \ge \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
 $$
@@ -185,9 +176,7 @@ $$
 &= \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(x) \:\Vert\: \mathrm{f}(x)) + \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(x) \:\Vert\: \mathrm{f}(x))= \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)).
 \end{aligned}
 $$
-
 We can generalize this to the Markov chain $Z \rightarrow X \rightarrow Y$ with $\mathrm{f}(z, x, y) = \mathrm{f}(z) \mathrm{f}(x \:\vert\:z) \mathrm{f}(y \:\vert\:x)$ for any distribution $\mathrm{f}(z)$:
-
 $$
 \begin{aligned}
 \mathop{\mathrm{I}}[X;Z] &= \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(X \:\vert\:Z) \:\Vert\: \mathrm{f}(X)) = \mathop{\mathrm{\mathbb{E}}}_{\mathrm{f}(z)} \left [ \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(X \:\vert\:z) \:\Vert\: \mathrm{f}(X)) \right ]\\
@@ -195,16 +184,70 @@ $$
 &= \mathop{\mathrm{I}}[Y;Z],
 \end{aligned}
 $$
-
 where $(1)$ follows from the KL data processing inequality. 
 %This is the data processing inequality for the mutual information.
 \end{multicols}
 \end{tcolorbox}
 }
 \column{0.5}
-\block{Function-Space Variational Inference}{
+\block{Function-Space Variational Inference}
+{
+  \begin{tcolorbox}[colback=green!5!white,colframe=teal!75!black,title=\textbf{TL;DR}]
+    \textbf{Function-space variational inference (FSVI)} is a principled approach to Bayesian inference that respects the inherent symmetries and equivalences in overparameterized models. It focuses on approximating the meaningful posterior $\pof{[\w] \given \Dany}$ while avoiding the complexities of explicitly constructing and working with equivalence classes.
+    The FSVI-ELBO regularizes towards a data prior:
+    $$
+    \begin{aligned}
+    \E{\qof{\w}}{-\log \pof{\Dany \given \w}} + \Kale{\qof{\Y... \given \x...}}{\pof{\Y... \given \x...}},
+    \end{aligned}
+    $$
+    unlike in regular variational inference, where we regularize towards a parameter prior $\Kale{\qof{\W}}{\pof{\W}}$.
+  \end{tcolorbox}
+  \begin{multicols}{2}
+    % \coloumnbreak
+    TK example for prediction symmetry TK
+    \begin{tcolorbox}[colback=green!5!white,colframe=teal!75!black,title=Prediction Equivalence]
+      Deep neural networks have many parameter symmetries, and it is often possible to permute the weights of a neural network without changing the outputs---for example, in a convolutional neural network, we could swap channels.
+
+      \emph{We are not interested in these symmetries.} 
+      
+      So, let's use \textbf{equivalence classes} group together parameters that lead to the same predictions on a (test) set of data:
+      \begin{align}
+        [\w] \triangleq \{\w' : \fof{x ; \w} = \fof{x ; \w} \quad \forall x \}.
+      \end{align}
+      Any distribution over the parameters $\pof{\w}$ induces a distribution $\hpof{[\w]}$ over the equivalence classes:
+      \begin{align}
+        \hpof{[\w]} \triangleq \sum_{\w' \in [\w]} \pof{\w'}.
+      \end{align}
+
+      Crucially, the definition of the equivalence classes depends on which $\x$ we consider as part of the input domain: \emph{different domains for $\x$ will induce different equivalence classes.}
+
+      $[\w]$ commutes with Bayesian inference:
+      $$
+      \hpof{[\w] \given \Dany} = \sum_{\w' \in [\w]} \pof{\w' \given \Dany}.
+      $$
+      Consequently, we have:
+      $$[\W \given \Dany] = [\W] \given \Dany.$$
+      This commutative property is not unique to the equivalence class mapping but rather a general characteristic of applying functions to random variables. The mapping $[\cdot]$ transforms the random variable $\W$ into a new random variable $[\W]$, and this transformation commutes with Bayesian inference (of course?).
+      \innerblock{Commutative Diagram of Bayesian Inference and Equivalence Mapping}{
+        \begin{tikzfigure}
+          % https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZABgBpiBdUkANwEMAbAVxiRAB12AjCBqOAJ4BbHg2CcAKgAsYOOgF8Q80uky58hFAEZyVWoxZtOo-sNHj202QoAEnGjABOOO+yF0cUgMaNgAEUVlVWw8AiIyLT16ZlZEEGRjXlMRXgsrOXkKJRUQDBCNIh1I6mjDOITuJMEUsUkZDIpXB2dXd08fMQClPRgoAHN4IlAAM0cIISQyEBwIJB19GKN2LygIFwAfVo9vXy7qBjouGAYABTVQzRAGGGGcbJGxicQpmaQAJhKDWPjOFbWs-aHY5nfJhOLXW73ECjcZzaivRAAZk+i3Kv1WOABVyBp3OBXBNzuQWhj3e8NmSJRZQ4ywxTScLk4bR2nUUgKOuNBlwhRIo8iAA
+          \begin{tikzcd}[ampersand replacement=\&]
+            \W \arrow[r, "\cdot \given \Dany"] \arrow[d, "{[\cdot]}"] \& \W \given \Dany \arrow[d, "{[\cdot]}"] \\
+            {[\W]} \arrow[r, "\cdot \given \Dany"]                \& {[\W] \given \Dany}                   
+            
+          \end{tikzcd}
+        \end{tikzfigure}
+      \begin{center}
+        This diagram illustrates that the mapping of parameters into their equivalence classes commutes with Bayesian inference.
+      \end{center}
+      } 
+
+      The proof above holds for any function $\fof{\cdot}$ applied to a random variable. We are free to either draw a parameter sample from the posterior and then apply the function to it, or alternatively, perform Bayesian inference directly on the transformed random variable.
+    \end{tcolorbox}
+  \end{multicols}
 }
 \end{columns}
+
 
 % \hypertarget{function-space-variational-inference}{%
 % \section{Function-Space Variational
