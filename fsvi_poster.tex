@@ -3,6 +3,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage{xurl}
 \usepackage{amsmath,amssymb}
+\usepackage{pstricks}
+\usepackage{pst-barcode}
 % \usepackage{iftex}
 \usepackage{textcomp} % provide euro and other symbols
 % \usepackage{lmodern}
@@ -168,7 +170,7 @@
   Equality holds when $\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}\:\vert\:Y) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta}\:\vert\:Y)) = 0$.
 \end{tldrbox}
 \begin{multicols}{2}
-\begin{proofbox}[title=Proof of the DPI]
+\begin{proofbox}[title={Proof of the \includegraphics[width=1em]{leafy-green.png} DPI}]
 Using the chain rule of the KL divergence:
 \begin{align*}
 \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X, Y) \:\Vert\: \mathrm{q}(X, Y)) &= \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \\
@@ -215,7 +217,10 @@ $$
 \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \ge \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
 $$
 \end{theorybox}
-\begin{theorybox}[title=Mutual Information DPI]
+\begin{tikzpicture}
+  \includegraphics[width=0.0625\textwidth]{fsvi_qr_code.png}
+\end{tikzpicture}
+\begin{theorybox}[title=Mutual Information DPI]  
 For any Markov chain $Z \rightarrow X \rightarrow Y$ with $\mathrm{f}(z, x, y) = \mathrm{f}(z) \mathrm{f}(x \:\vert\:z) \mathrm{f}(y \:\vert\:x)$ for any distribution $\mathrm{f}(z)$:
 \begin{align*}
   \MIof{X;Z} &= \Kale{\fof{X \given Z}}{\fof{X}}\\
@@ -227,7 +232,7 @@ For any Markov chain $Z \rightarrow X \rightarrow Y$ with $\mathrm{f}(z, x, y) =
 where $(1)$ follows from the KL DPI.
 %This is the data processing inequality for the mutual information.
 \end{theorybox}
-\begin{theorybox}[title=Chain Rule of the KL TK Divergence \& DPI]
+\begin{theorybox}[title={Chain Rule of the \includegraphics[width=1em]{leafy-green.png} Divergence \& DPI}]
       An important property of the KL divergence is the chain rule:
       \begin{align*}
       &\Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} \\
@@ -271,9 +276,10 @@ where $(1)$ follows from the KL DPI.
       In standard VI, we approximate a Bayesian posterior $\pof{\w \given \Dany}$ with a variational distribution $\qof{\w}$ by minimizing $\Kale{\qof{\W}}{\pof{\W \given \Dany}}$.
       This yields an information-theoretic evidence (\textbf{upper}) bound on the information content $-\log \pof{\Dany}$ of the data $\Dany$ under the variational distribution $\qof{\w}$:
       \begin{align*}
-      & \underbrace{-\log \pof{\Dany}}_{\text{Evidence }\xHof{\pof{\Dany}}} \le \xHof{\pof{\Dany}} + \Kale{\qof{\W}}{\pof{\W \given \Dany}} \\
+      & 0 \le \xHof{\pof{\Dany}} + \Kale{\qof{\W}}{\pof{\W \given \Dany}} \\
       &= \xHof{\pof{\Dany}} + \Kale{\qof{\W}}{\frac{\pof{\Dany \given \W}\,\pof{\W}}{\pof{\Dany}}}\\
-      &\, = \underbrace{\E{\qof{\w}}{-\log \pof{\Dany \given \w}} + \Kale{\qof{\W}}{\pof{\W}}}_{\text{Evidence}\ \text{Bound}}.
+      &\, = \underbrace{\E{\opq}{-\log \pof{\Dany \given \W}} + \Kale{\qof{\W}}{\pof{\W}}}_{\text{Evidence}\ \text{Bound}} \\
+      &\, \quad - (\underbrace{-\log \pof{\Dany}}_{\text{Evidence }\xHof{\pof{\Dany}}})
       \end{align*}
       In the literature, the negative of this bound is called the \textbf{evidence lower bound (ELBO)} and is maximized.
     \end{backgroundbox}
@@ -345,8 +351,6 @@ where $(1)$ follows from the KL DPI.
     \end{multicols}
 }
 \end{columns}
-
-
 % \hypertarget{function-space-variational-inference}{%
 % \section{Function-Space Variational
 % Inference}\label{function-space-variational-inference}}
