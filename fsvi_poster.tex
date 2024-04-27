@@ -2,6 +2,7 @@
 \usetheme{Board}
 \usepackage[utf8]{inputenc}
 \usepackage{xurl}
+\usepackage{natbib}
 \usepackage{amsmath,amssymb}
 \usepackage{pstricks}
 \usepackage{pst-barcode}
@@ -46,9 +47,93 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{tikz}
 \usepackage{tikz-cd}
-\usepackage{tcolorbox}
+\usepackage[most]{tcolorbox}
+\usetikzlibrary{decorations.pathmorphing,shadows.blur,shadings}
 \tcbuselibrary{skins}
+%\pgfmathsetseed{1} % To have predictable results
+
+% Define a background layer, in which the parchment shape is drawn
+% \pgfdeclarelayer{background}
+% \pgfsetlayers{background,main}
+
+% This is the base for the fractal decoration. It takes a random point
+% between the start and end, and raises it a random amount, thus
+% transforming a segment into two, connected at that raised point This
+% decoration can be applied again to each one of the resulting
+% segments and so on, in a similar way of a Koch snowflake.
+\pgfdeclaredecoration{irregular fractal line}{init}
+{
+  \state{init}[width=\pgfdecoratedinputsegmentremainingdistance]
+  {
+    \pgfpathlineto{%
+      \pgfpoint{random * \pgfdecoratedinputsegmentremainingdistance}{%
+        (random * \pgfdecorationsegmentamplitude - 0.02) *
+         \pgfdecoratedinputsegmentremainingdistance}}
+    \pgfpathlineto{\pgfpoint{\pgfdecoratedinputsegmentremainingdistance}{0pt}}
+  }
+}
+
+% Define paper style
+\tikzset{
+  paper/.style={%
+    draw=black!10,
+    blur shadow,
+    path picture={%
+      \fill[solarized-base3!50!white] ([shift={(-5pt,-5pt)}]path picture bounding box.south west) rectangle ([shift={(5pt,5pt)}]path picture bounding box.north east);
+    }
+  },
+  irregular border/.style={%
+    decoration={irregular fractal line, amplitude=0.2},
+    decorate,
+  },
+  ragged border/.style={%
+    decoration={random steps, segment length=7mm, amplitude=2mm},
+    decorate,
+  }
+}
+
+\newtcolorbox{quotebox}{%
+  % enhanced jigsaw, <-- Beware, This rendering engine let the
+  %                      frame appear on some PDF viewers
+  empty, % Better use this rendering engine to avoid the bug
+  interior code={%
+    % \begin{pgfonlayer}{background}  % Draw the shape behind
+      \fill[paper] % recursively decorate the bottom border
+      decorate[irregular border]{%
+        decorate{decorate{decorate{decorate[ragged border]{
+                ($(interior.south east) - (0, random * 5mm)$) --
+                ($(interior.south west) - (0, random * 5mm)$)
+              }
+            }
+          }
+        }
+      }
+      -- (interior.north west) -- (interior.north east) -- cycle;
+    % \end{pgfonlayer}
+  },
+  sharp corners,
+  boxrule=0pt,
+  left=5pt,
+  right=5pt,
+  top=5pt,
+  bottom=0.5em,
+  after skip=10mm,
+}
+
+%% TColorBox Note environment
+\newlength\savedparindent
+\setlength\savedparindent\parindent
+\newenvironment{tnote}[1]{%
+  \begin{tcbnote}{}
+    \setlength\parindent{\savedparindent}
+    \begin{center}
+      \sffamily\bfseries\LARGE #1
+    \end{center}\par
+  }{%
+  \end{tcbnote}
+}
 % Color box styles
 \newtcolorbox{tldrbox}{
   colback=solarized-blue!5!white,
@@ -84,6 +169,17 @@
   interior style={top color=solarized-yellow!5!white, bottom color=solarized-yellow!10!white}, 
   #1
 }
+\newtcolorbox{examplebox}[1][]{
+  colback=solarized-violet!5!white,
+  colframe=solarized-violet!75!black,
+  enhanced,
+  drop shadow southeast,
+  boxrule=2pt,
+  sharp corners=south,
+  rounded corners=north,
+  interior style={top color=solarized-violet!5!white, bottom color=solarized-violet!10!white}, 
+  #1
+}
 \newtcolorbox{backgroundbox}[1][]{
   colback=solarized-base00!5!white,
   colframe=solarized-base00!75!black,
@@ -95,6 +191,7 @@
   interior style={top color=solarized-base00!5!white, bottom color=solarized-base00!10!white}, 
   #1
 }
+
 
 \usepackage{graphicx}
 \usepackage{multicol}
@@ -153,6 +250,8 @@
 %   pdfauthor={Andreas Kirsch, University of Oxford},
 %   hidelinks}
 
+\renewcommand{\bibsection}{} % This line disables the automatic "References" section heading
+
 \title{Bridging the Data Processing Inequality and Function-Space Variational Inference}
 \author{Andreas Kirsch}
 \institute{University of Oxford\textsuperscript{--2023}}
@@ -162,92 +261,87 @@
 \maketitle
 
 \begin{columns}
-\column{0.5}
-\block{Data Processing Inequalities}{
-\begin{tldrbox}
-  Informally, the \textbf{Data Processing Inequality (DPI)} states that processing data stochastically can only reduce information. Formally, for distributions $\mathrm{q}(\boldsymbol{\Theta})$ and $\mathrm{p}(\boldsymbol{\Theta})$ over a random variable $\boldsymbol{\Theta}$ and a stochastic mapping $Y = \mathrm{f}(\boldsymbol{\Theta})$, the DPI is expressed as:
-  $$\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta})) \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(Y) \:\Vert\: \mathrm{p}(Y))$$
-  Equality holds when $\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}\:\vert\:Y) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta}\:\vert\:Y)) = 0$.
-\end{tldrbox}
-\begin{multicols}{2}
-\begin{proofbox}[title={Proof of the \includegraphics[width=1em]{leafy-green.png} DPI}]
-Using the chain rule of the KL divergence:
-\begin{align*}
-\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X, Y) \:\Vert\: \mathrm{q}(X, Y)) &= \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \\
-&+ \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y \:\vert\:X) \:\Vert\: \mathrm{q}(Y \:\vert\:X)),
-\end{align*}
-and its symmetry, we have:
-\begin{align*}
-&\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) + \underbrace{\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y\:\vert\:X) \:\Vert\: \mathrm{q}(Y \:\vert\:X))}_{=\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(Y\:\vert\:X) \:\Vert\: \mathrm{f}(Y \:\vert\:X))=0}\\
-&\quad =\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X, Y) \:\Vert\: \mathrm{q}(X, Y))\\
-&\quad =\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y))+\underbrace{\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X \:\vert\:Y) \:\Vert\: \mathrm{q}(X \:\vert\:Y))}_{\ge 0}\\
-&\quad \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
-\end{align*}
-We have equality exactly when $\mathrm{p}(x \:\vert\:y) = \mathrm{q}(x \:\vert\:y)$ for (almost) all $x, y.$
-\end{proofbox}
-
-\columnbreak
-
-\begin{tcolorbox}[drop fuzzy shadow southeast,enhanced,colback=brown!5!orange!40!white, colframe=brown!80!black, boxrule=1pt, left=5pt, right=5pt, top=5pt, bottom=5pt]
-{\Large\emph{The data processing inequality states that if two random variables are transformed in this way, they cannot become easier to tell apart.}}
-\begin{flushright}
-``Understanding Variational Inference in Function-Space'', \\
-Burt et al. (2021)
-\end{flushright}
-\end{tcolorbox}
-
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Example: Image Processing]
-Consider an image processing pipeline where $X$ is the original image, $Y$ is a compressed version, and $Z$ is $Y$ after adding blur and pixelation. The DPI tells us that $\mathop{\mathrm{I}}[X;Y] \ge \mathop{\mathrm{I}}[X;Z]$, as each processing step results in information loss.
-\end{tcolorbox}
-
-TK examples TK
-
+  \column{0.5}
+  \block{Data Processing Inequalities}{
+  \begin{tldrbox}
+    Informally, the \textbf{Data Processing Inequality (DPI)} states that processing data stochastically can only reduce information. Formally, for distributions $\mathrm{q}(\boldsymbol{\Theta})$ and $\mathrm{p}(\boldsymbol{\Theta})$ over a random variable $\boldsymbol{\Theta}$ and a stochastic mapping $Y = \mathrm{f}(\boldsymbol{\Theta})$, the DPI is expressed as:
+    $$\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta})) \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(Y) \:\Vert\: \mathrm{p}(Y))$$
+    Equality holds when $\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}\:\vert\:Y) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta}\:\vert\:Y)) = 0$.
+  \end{tldrbox}
+  \begin{multicols}{2}
+  \begin{quotebox}
+    {\Large\emph{The data processing inequality states that if two random variables are transformed in this way, they cannot become easier to tell apart.}}
+    \begin{flushright}
+    ``Understanding Variational Inference in Function-Space'', \\
+    Burt et al. (2021)
+    \end{flushright}
+  \end{quotebox}
+  \begin{examplebox}[title=Example: Image Processing]
+    Consider an image processing pipeline where $X$ is the original image, $Y$ is a compressed version, and $Z$ is $Y$ after adding blur and pixelation. The DPI tells us that $\mathop{\mathrm{I}}[X;Y] \ge \mathop{\mathrm{I}}[X;Z]$, as each processing step results in information loss.
+  \end{examplebox}
 \end{multicols}
 \begin{multicols}{2}
-\begin{theorybox}[title=Jenson-Shannon Divergence DPI]
-The Jensen-Shannon divergence (JSD) makes the KL divergence symmetric. For:
-\begin{align*}
-\mathrm{f}(x) &= \frac{\mathrm{p}(x) + \mathrm{q}(x)}{2}\\
-\mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(x) \:\Vert\: \mathrm{q}(x)) &= \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(x) \:\Vert\: \mathrm{f}(x)) + \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(x) \:\Vert\: \mathrm{f}(x)).
-\end{align*}
-The square root of the Jensen-Shannon divergence, the \emph{Jensen-Shannon distance}, is symmetric, satisfies the triangle inequality and hence a metric.
+  \begin{theorybox}[title=Jenson-Shannon Divergence DPI]
+  The Jensen-Shannon divergence (JSD) makes the KL divergence symmetric. For:
+  \begin{align*}
+  \mathrm{f}(x) &= \frac{\mathrm{p}(x) + \mathrm{q}(x)}{2}\\
+  \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(x) \:\Vert\: \mathrm{q}(x)) &= \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(x) \:\Vert\: \mathrm{f}(x)) + \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(x) \:\Vert\: \mathrm{f}(x)).
+  \end{align*}
+  The square root of the Jensen-Shannon divergence, the \emph{Jensen-Shannon distance}, is symmetric, satisfies the triangle inequality and hence a metric.
 
-Given $\mathrm{p}(x)$ and $\mathrm{q}(x)$ and shared transition function $\mathrm{f}(y \:\vert\:x)$ for the model $X \rightarrow Y$, we obtain a Jensen-Shannon divergence data processing inequality by applying the KL DPI twice:
-$$
-\mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \ge \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
-$$
-\end{theorybox}
-\begin{tikzpicture}
-  \includegraphics[width=0.0625\textwidth]{fsvi_qr_code.png}
-\end{tikzpicture}
-\begin{theorybox}[title=Mutual Information DPI]  
-For any Markov chain $Z \rightarrow X \rightarrow Y$ with $\mathrm{f}(z, x, y) = \mathrm{f}(z) \mathrm{f}(x \:\vert\:z) \mathrm{f}(y \:\vert\:x)$ for any distribution $\mathrm{f}(z)$:
-\begin{align*}
-  \MIof{X;Z} &= \Kale{\fof{X \given Z}}{\fof{X}}\\
-  &= \E{\fof{z}} {\Kale{\fof{X \given z}}{\fof{X}}}\\
-  &\overset{(1)}{\ge} \E{\fof{z}} {\Kale{\fof{Y \given z}}{\fof{Y}}}\\
-  &= \Kale{\fof{Y \given Z}}{\fof{Y}}\\
-  &= \MIof{Y;Z},
-\end{align*}
-where $(1)$ follows from the KL DPI.
-%This is the data processing inequality for the mutual information.
-\end{theorybox}
-\begin{theorybox}[title={Chain Rule of the \includegraphics[width=1em]{leafy-green.png} Divergence \& DPI}]
-      An important property of the KL divergence is the chain rule:
-      \begin{align*}
-      &\Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} \\
-      &\quad = \sum_{i=1}^n \Kale{\qof{\Y_i \given 
-      \Y_{i-1}, ...}}{\pof{\Y_i \given \Y_{i-1}, ...}}.
-      \end{align*}
-      This chain rule also yields a \textbf{chain inequality}:
-      \begin{align*}
-      \Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} &\ge \Kale{\qof{\Y_{n-1},...}}{\pof{\Y_{n-1},...}} \\
-      &...\\
-      &\ge \Kale{\qof{\Y_1}}{\pof{\Y_1}},
-      \end{align*}
-      where we start from the KL DPI and then use the chain rule. 
-    \end{theorybox}
-\end{multicols}
+  For $\mathrm{p}(x)$ and $\mathrm{q}(x)$ and shared transition function $\mathrm{f}(y \:\vert\:x)$ for the model $X \rightarrow Y$:
+  %, we obtain a Jensen-Shannon divergence data processing inequality by applying the KL DPI twice:
+  $$
+  \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \ge \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
+  $$
+  \end{theorybox}
+  \begin{theorybox}[title=Mutual Information DPI]  
+  For any Markov chain $Z \rightarrow X \rightarrow Y$ with $\mathrm{f}(z, x, y) = \mathrm{f}(z) \mathrm{f}(x \:\vert\:z) \mathrm{f}(y \:\vert\:x)$ for any distribution $\mathrm{f}(z)$:
+  \begin{align*}
+    \MIof{X;Z} &= \Kale{\fof{X \given Z}}{\fof{X}}\\
+    &= \E{\fof{z}} {\Kale{\fof{X \given z}}{\fof{X}}}\\
+    &\overset{(1)}{\ge} \E{\fof{z}} {\Kale{\fof{Y \given z}}{\fof{Y}}}\\
+    &= \Kale{\fof{Y \given Z}}{\fof{Y}}\\
+    &= \MIof{Y;Z},
+  \end{align*}
+  where $(1)$ follows from the KL DPI.
+  %This is the data processing inequality for the mutual information.
+  \end{theorybox}
+% \end{multicols}
+% }
+% \block{Proofs}{
+%   \begin{multicols}{2}
+  \begin{proofbox}[title={Chain Rule of the \includegraphics[width=1em]{leafy-green.png} Divergence}]
+    An important property of the KL divergence is the chain rule:
+    \begin{align*}
+    &\Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} \\
+    &\quad = \sum_{i=1}^n \Kale{\qof{\Y_i \given 
+    \Y_{i-1}, ...}}{\pof{\Y_i \given \Y_{i-1}, ...}}.
+    \end{align*}
+    This chain rule also yields a \textbf{chain inequality}:
+    \begin{align*}
+    \Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} &\ge \Kale{\qof{\Y_{n-1},...}}{\pof{\Y_{n-1},...}} \\
+    &...\\
+    &\ge \Kale{\qof{\Y_1}}{\pof{\Y_1}},
+    \end{align*}
+    where we start from the KL DPI and then use the chain rule. 
+  \end{proofbox}
+  \begin{proofbox}[title={Proof of the \includegraphics[width=1em]{leafy-green.png} DPI}]
+    Using the chain rule of the KL divergence twice:
+    % \begin{align*}
+    % \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X, Y) \:\Vert\: \mathrm{q}(X, Y)) &= \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \\
+    % &+ \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y \:\vert\:X) \:\Vert\: \mathrm{q}(Y \:\vert\:X)),
+    % \end{align*}
+    % and its symmetry, we have:
+    \begin{align*}
+    &\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) + \underbrace{\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y\:\vert\:X) \:\Vert\: \mathrm{q}(Y \:\vert\:X))}_{=\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{f}(Y\:\vert\:X) \:\Vert\: \mathrm{f}(Y \:\vert\:X))=0}\\
+    &\quad =\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X, Y) \:\Vert\: \mathrm{q}(X, Y))\\
+    &\quad =\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y))+\underbrace{\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(X \:\vert\:Y) \:\Vert\: \mathrm{q}(X \:\vert\:Y))}_{\ge 0}\\
+    &\quad \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
+    \end{align*}
+    We have equality exactly when $\mathrm{p}(x \:\vert\:y) = \mathrm{q}(x \:\vert\:y)$ for (almost) all $x, y.$
+    \end{proofbox}
+  \end{multicols}
 }
 % \column{0.25}
 % \block{Variational Inference \& ELBO}{
@@ -260,6 +354,22 @@ where $(1)$ follows from the KL DPI.
 %     \end{align*}
 %     In the literature, the negative of this bound is called the \textbf{evidence lower bound (ELBO)} and is maximized.
 % }
+\begin{subcolumns}
+  \subcolumn{0.25}
+  \block{More Info}{
+    % \begin{tikzpicture}
+      \centering
+      \includegraphics[width=0.0625\textwidth]{fsvi_qr_code.png}
+    % \end{tikzpicture}
+  }
+  \subcolumn{0.75}
+  \block{More References}{
+    % Add references from assets/bibliography/2024-05-07-dpi-fsvi.bib
+    \nocite{cover1999elements,rudner2022tractable}
+    \bibliographystyle{plain}
+    \bibliography{fsvi_poster}
+  }
+\end{subcolumns}
 \column{0.5}
 \block{Function-Space Variational Inference}
 {
