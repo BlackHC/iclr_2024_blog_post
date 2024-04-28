@@ -383,15 +383,14 @@
   \end{tldrbox}
   \begin{multicols}{2}
     \begin{backgroundbox}[title=(Regular) Variational Inference \& ELBO]
-      In standard VI, we approximate a Bayesian posterior $\pof{\w \given \Dany}$ with a variational distribution $\qof{\w}$ by minimizing $\Kale{\qof{\W}}{\pof{\W \given \Dany}}$.
-      This yields an information-theoretic evidence (\textbf{upper}) bound on the information content $-\log \pof{\Dany}$ of the data $\Dany$ under the variational distribution $\qof{\w}$:
+      We approximate the Bayesian posterior $\pof{\w \given \Dany}$ with a variational distribution $\qof{\w}$ by minimizing $\Kale{\qof{\W}}{\pof{\W \given \Dany}}$ and dropping constant (intractable) terms to obtain a simplified objective, which also yields an information-theoretic \textbf{upper} bound on the information content $-\log \pof{\Dany}$ of the data $\Dany$:
       \begin{align*}
-      & 0 \le \xHof{\pof{\Dany}} + \Kale{\qof{\W}}{\pof{\W \given \Dany}} \\
-      &= \xHof{\pof{\Dany}} + \Kale{\qof{\W}}{\frac{\pof{\Dany \given \W}\,\pof{\W}}{\pof{\Dany}}}\\
-      &\, = \underbrace{\E{\opq}{-\log \pof{\Dany \given \W}} + \Kale{\qof{\W}}{\pof{\W}}}_{\text{Evidence}\ \text{Bound}} \\
-      &\, \quad - (\underbrace{-\log \pof{\Dany}}_{\text{Evidence }\xHof{\pof{\Dany}}})
+      & 0 \le \Kale{\qof{\W}}{\pof{\W \given \Dany}} \\
+      &= \Kale{\qof{\W}}{\frac{\pof{\Dany \given \W}\,\pof{\W}}{\pof{\Dany}}}\\
+      &\, = \underbrace{\E{\opq}{-\log \pof{\Dany \given \W}} + \Kale{\qof{\W}}{\pof{\W}}}_{\text{Evidence Bound (Simplified Objective)}} \\
+      &\, \quad - (\underbrace{-\log \pof{\Dany}}_{\text{(neg.~log) Evidence}})
       \end{align*}
-      In the literature, the negative of this bound is called the \textbf{evidence lower bound (ELBO)} and is maximized.
+      The negative of this bound is called the \textbf{evidence lower bound (ELBO)}.
     \end{backgroundbox}
     \begin{theorybox}[title=Parameter Symmetries]
       Deep neural networks have many parameter symmetries: for example, in a convolutional neural network, we could swap channels without changing the predictions.
