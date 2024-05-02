@@ -391,13 +391,38 @@
       % \begin{theorybox}
         \includegraphics[width=\linewidth]{anticorrelated_prior_conflict_and_model_misspecification_1.30.png}
         With anti-correlated prior-data conflict and model misspecification, existing methods fail:
-        Training speed methods (TSE, TSE-E, TSE-EMA) \citep{lyle2020bayesian,ru2021speedy} and the conditional log marginal likelihood (CLML) \citep{fong2020marginal,lotfi2022bayesian} \emph{essentially} approximate the validation loss by averaging under the loss curve might and might prefer models that generalize worse in the low-data regime when the (partial) area under the curve does not reflect the generalization performance.
+        Training speed methods (TSE, TSE-E, TSE-EMA) \citep{lyle2020bayesian,ru2021speedy} and the conditional log marginal likelihood (CLML) \citep{fong2020marginal,lotfi2022bayesian} \emph{essentially} approximate the generalization loss by averaging under the loss curve might and might prefer models that generalize worse in the low-data regime when the (partial) area under the curve does not reflect the generalization performance.
         \includegraphics[width=\linewidth]{area_under_curve_1.00.png}
       % \end{theorybox}
     }
   }
+  \begin{subcolumns}
+    \subcolumn{0.7}
+    {
+      \colorlet{blockbodybgcolor}{solarized-orange!10!white}    
+      \block{}{
+        \vspace{1em}
+        \begin{multicols}{2}
+          \vfill
+          \small The different metrics from prior art can fail when model misspecification and prior-data conflict are anti-correlated. Here, for a simple binary regression task:
+          \vfill
+          \columnbreak
+          \includegraphics[width=\linewidth]{binary_regression_information_metrics.png}
+        \end{multicols}
+      }
+    }
+    \subcolumn{0.3}
+    {
+        \colorlet{blockbodybgcolor}{solarized-green!5!white}   
+      \block{Details}{
+        % \vspace{1em}
+        \centering
+        \includegraphics[width=0.8\linewidth]{clml_qr_code.png}
+      }
+    }
+    \end{subcolumns}
   {
-    \colorlet{blockbodybgcolor}{solarized-base00!5!white} 
+    \colorlet{blockbodybgcolor}{solarized-green!5!white} 
     \block{References}
     {
       \small
@@ -405,14 +430,5 @@
       \bibliography{clml_poster}
     }
   }
-  \begin{subcolumns}
-  \subcolumn{0.7}
-  \subcolumn{0.3}
-  \block{}{
-    \vspace{1em}
-    \centering
-    \includegraphics[width=\linewidth]{clml_qr_code.png}
-  }
-  \end{subcolumns}
 \end{columns}
 \end{document}
