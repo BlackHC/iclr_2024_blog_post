@@ -264,7 +264,8 @@
   \column{0.5}
   \block{Data Processing Inequalities}{
   \begin{tldrbox}
-    Informally, the \textbf{Data Processing Inequality (DPI)} states that processing data stochastically can only reduce information. Formally, for distributions $\mathrm{q}(\boldsymbol{\Theta})$ and $\mathrm{p}(\boldsymbol{\Theta})$ over a random variable $\boldsymbol{\Theta}$ and a stochastic mapping $Y = \mathrm{f}(\boldsymbol{\Theta})$, the DPI is expressed as:
+    Informally, the \textbf{Data Processing Inequality (DPI)} states that processing data stochastically can only reduce information. 
+    Formally, for distributions $\mathrm{q}(\boldsymbol{\Theta})$ and $\mathrm{p}(\boldsymbol{\Theta})$ over a random variable $\boldsymbol{\Theta}$ and a stochastic mapping $Y = \mathrm{f}(\boldsymbol{\Theta})$, the Kullback-Leibler DPI is expressed as:
     $$\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta})) \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(Y) \:\Vert\: \mathrm{p}(Y))$$
     Equality holds when $\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}\:\vert\:Y) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta}\:\vert\:Y)) = 0$.
   \end{tldrbox}
@@ -277,7 +278,7 @@
     \end{flushright}
   \end{quotebox}
   \begin{examplebox}[title=Example: Image Processing]
-    Consider an image processing pipeline where $X$ is the original image, $Y$ is a compressed version, and $Z$ is $Y$ after adding blur and pixelation. The DPI tells us that $\mathop{\mathrm{I}}[X;Y] \ge \mathop{\mathrm{I}}[X;Z]$, as each processing step results in information loss.
+    Consider an image processing pipeline where $X$ is the original image, $Y$ is a compressed version, and $Z$ is $Y$ after adding blur and pixelation. The DPI tells us that the mutual information $\mathop{\mathrm{I}}[X;Y] \ge \mathop{\mathrm{I}}[X;Z]$, as each processing step results in information loss.
   \end{examplebox}
 \end{multicols}
 \begin{multicols}{2}
