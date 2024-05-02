@@ -147,6 +147,18 @@
   rounded corners=north,
   interior style={top color=solarized-blue!5!white, bottom color=solarized-blue!20!white}, 
 }
+\newtcolorbox{customtldrbox}[1]{
+  colback=solarized-blue!5!white,
+  colframe=solarized-blue!75!black,
+  title=#1,
+  enhanced,
+  drop shadow southeast,
+  boxrule=2pt,
+  fonttitle=\bfseries\large,
+  sharp corners=south,
+  rounded corners=north,
+  interior style={top color=solarized-blue!5!white, bottom color=solarized-blue!20!white}, 
+}
 \newtcolorbox{proofbox}[1][]{
   colback=solarized-cyan!5!white,
   colframe=solarized-cyan!75!black,
@@ -271,7 +283,7 @@
 
 \renewcommand{\bibsection}{} % This line disables the automatic "References" section heading
 
-\title{Bayesian Model Selection: Marginal Likelihood, CV, CLML, and Beyond}
+\title{Bayesian Model Selection: Marginal Likelihood, Cross-Validation \& Co}
 \author{Andreas Kirsch}
 \institute{University of Oxford\textsuperscript{--2023}}
 \date{\today}
@@ -287,12 +299,10 @@
     \begin{quotebox}
       \textbf{Occam’s Razor} is the principle that, all else being equal, the simplest explanation tends to be the right one.
     \end{quotebox}
-    \begin{tldrbox}
-      Occam's Razor \& Bayesian Model Selection:\\
-      Minimize information, maximize likelihood\\
-      \textbf{BUT} ambiguous about multiple data points \& objectives
-    \end{tldrbox}
-    \begin{backgroundbox}[title={Examples {\small (left: Reddit, right: MacKay)}}]
+    \begin{customtldrbox}{Occam's Razor $\leftrightarrow$ Bayesian Model Selection}
+      Both minimize information/maximize likelihoods \textbf{BUT} are ambiguous about multiple data points \& objectives.
+    \end{customtldrbox}
+    \begin{backgroundbox}[title={Examples {\small (left: Reddit, right: \citet{mackay2003information})}}]
       \begin{multicols}{2}
         \includegraphics[width=\linewidth]{cow_slab_cow.png}
         \includegraphics[width=\linewidth]{mackay_343_example.png}
@@ -319,30 +329,13 @@
     \begin{theorybox}[title=Multiple vs Individual Points]
       For multiple samples (given datasets), information-theoretic quantities for model selection can be computed in different ways, \textbf{leading to ambiguity}:
       \begin{itemize}
-      \item \textbf{Joint Quantities} (e.g., joint marginal cross-entropy, conditional joint marginal information) substitute the dataset directly, e.g. $\Hof{\Dataset\given\h}$, and entail \textbf{in-context learning}.
+      \item \textbf{Joint Quantities} (e.g., joint marginal cross-entropy, conditional joint marginal information) substitute the dataset directly, e.g. $\Hof{\Dataset\given\h}$, and include \textbf{in-context learning}.
       \item \textbf{Individual Quantities} (e.g., marginal cross-entropy, conditional marginal cross-entropy) focus on model performance over individual points, e.g., $\iCrossEntropy{\oppdata}{\pof{\cdot \given \h}}{\X}$, similar to validation/test performance.
       \end{itemize}
     \end{theorybox}
   }
   }
   \column{0.5}
-  \block{Different Information Quantities for Model Selection}{
-    \begin{theorybox}[title=Information Quantities]
-      For a dataset $\xNset = \{\x_1, \ldots, \x_N\}$, we consider the following information-theoretic quantities for model selection:
-      \begin{itemize}
-        % \item \textbf{Marginal Cross-Entropy}: $\iCrossEntropy{\oppdata}{\pof{\cdot \given \h}}{\X}$
-        % The expected information content of a single data point $\X$ under the model's prior predictive distribution, averaged over the true data distribution.
-        \item \textbf{Joint Marginal Cross-Entropy}: $\iCrossEntropy{\oppdata}{\pof{\cdot \given \h}}{\XNset}$
-        The expected joint information content of a dataset $(\X_1, ..., \X_n)$ under the model's joint prior predictive distribution, averaged over the true data distribution. Equivalent to the \textbf{log marginal likelihood (LML)}.
-        \item \textbf{Conditional Marginal Cross-Entropy}: $\iCrossEntropy{\oppdata}{\pof{\cdot \given \h}}{\X_n \given \X_{n-1}, \ldots, \X_1}$
-        The expected information content of a single data point $\X_n$ conditioned on the previous data points $(\X_{n-1}, \ldots, \X_1)$ under the model's predictive distribution, averaged over the true data distribution. Equivalent to \textbf{leave-one-out cross-validation}.
-        \item \textbf{Conditional Joint Marginal Information}: $\Hof{\xNsetk \given \xNkset, \h}$
-        The joint information content of a dataset $\xNsetk$ conditioned on a previous dataset $\xNkset$ under the model's joint predictive distribution. This is data-order dependent. Also known as the (negative) \textbf{conditional log marginal likelihood (CLML)} \citep[main paper]{lotfi2022bayesian}.
-        \item \textbf{Conditional Joint Marginal Cross-Entropy}: $\iCrossEntropy{\oppdata}{\pof{\cdot \given \h}}{\XNsetk \given \XNkset}$
-        The expected joint information content of a dataset $\XNsetk$ conditioned on a previous dataset $\XNkset$ under the model's joint predictive distribution, averaged over the true data distribution. Measures the model's online learning (or in-context learning) performance. Also known as the (negative) \textbf{conditional log marginal likelihood (CLML)} \citep[appendix]{lotfi2022bayesian}.
-      \end{itemize}
-    \end{theorybox}
-  }
   \block{Different Data Regimes, Model Misspecification and Prior-Data Conflict}{
     \begin{tldrbox}
       \begin{enumerate}
@@ -358,9 +351,9 @@
     % \end{backgroundbox}
     \begin{multicols}{2}
       \begin{theorybox}
-        \textbf{Model misspecification} occurs when the assumed model class does not contain the true data-generating process. In this case:
+        \textbf{Model misspecification} occurs when the assumed model class does not contain the true data-generating process:
         \begin{itemize}
-          \item Different models can have different levels of misspecification.
+          \item Different models have different levels of misspecification.
           \item In the infinite data limit, the model with the lowest misspecification (i.e., the closest to the true data-generating process) will perform best.
         \end{itemize}
       \end{theorybox}
@@ -374,16 +367,33 @@
       \end{theorybox}
     \end{multicols}
   }
+  \block{Different Information Quantities for Model Selection}{
+    % \begin{theorybox}[title=Information Quantities]
+      For a dataset $\xNset = \{\x_1, \ldots, \x_N\}$, we consider the following information-theoretic quantities for model selection:
+      \begin{itemize}
+        % \item \textbf{Marginal Cross-Entropy}: $\iCrossEntropy{\oppdata}{\pof{\cdot \given \h}}{\X}$
+        % The expected information content of a single data point $\X$ under the model's prior predictive distribution, averaged over the true data distribution.
+        \item \textbf{Joint Marginal Cross-Entropy}: $\iCrossEntropy{\oppdata}{\pof{\cdot \given \h}}{\XNset}$.
+        The expected joint information content of a dataset $(\X_1, ..., \X_n)$ under the model's joint prior predictive distribution, averaged over the true data distribution. Equivalent to the \textbf{log marginal likelihood (LML)}.
+        \item \textbf{Conditional Marginal Cross-Entropy}: $\iCrossEntropy{\oppdata}{\pof{\cdot \given \h}}{\X_n \given \X_{n-1}, \ldots, \X_1}$.
+        The expected information content of a single data point $\X_n$ conditioned on the previous data points $(\X_{n-1}, \ldots, \X_1)$ under the model's predictive distribution, averaged over the true data distribution. Equivalent to \textbf{leave-one-out cross-validation}.
+        \item \textbf{Conditional Joint Marginal Information}: $\Hof{\xNsetk \given \xNkset, \h}$.
+        The joint information content of a dataset $\xNsetk$ conditioned on a previous dataset $\xNkset$ under the model's joint predictive distribution. This is data-order dependent. Also known as the (negative) \textbf{conditional log marginal likelihood (CLML)} \citep[main paper]{lotfi2022bayesian}.
+        \item \textbf{Conditional Joint Marginal Cross-Entropy}: $\iCrossEntropy{\oppdata}{\pof{\cdot \given \h}}{\XNsetk \given \XNkset}$.
+        The expected joint information content of a dataset $\XNsetk$ conditioned on a previous dataset $\XNkset$ under the model's joint predictive distribution, averaged over the true data distribution. Measures the model's online learning (or in-context learning) performance. Also known as the (negative) \textbf{conditional log marginal likelihood (CLML)} \citep[appendix]{lotfi2022bayesian}.
+      \end{itemize}
+    % \end{theorybox}
+  }
   \column{0.25}
   {
     \colorlet{blockbodybgcolor}{solarized-orange!10!white}    
     \block{Failures \& Prior Art}{
-      \begin{theorybox}
+      % \begin{theorybox}
         \includegraphics[width=\linewidth]{anticorrelated_prior_conflict_and_model_misspecification_1.30.png}
-        For anti-correlated prior-data conflict and model misspecification, existing methods fail:
-        Training speed methods (TSE, TSE-E, TSE-EMA) \citep{lyle2020bayesian,ru2021speedy} and the conditional log marginal likelihood (CLML) \citep{fong2020marginal,lotfi2022bayesian} \emph{essentially} which approximate the validation loss by averaging under the loss curve might prefer more misspecified models in the low-data regime when the (partial) area under the curve does not reflect the generalization performance.
+        With anti-correlated prior-data conflict and model misspecification, existing methods fail:
+        Training speed methods (TSE, TSE-E, TSE-EMA) \citep{lyle2020bayesian,ru2021speedy} and the conditional log marginal likelihood (CLML) \citep{fong2020marginal,lotfi2022bayesian} \emph{essentially} approximate the validation loss by averaging under the loss curve might and might prefer models that generalize worse in the low-data regime when the (partial) area under the curve does not reflect the generalization performance.
         \includegraphics[width=\linewidth]{area_under_curve_1.00.png}
-      \end{theorybox}
+      % \end{theorybox}
     }
   }
   {
@@ -396,10 +406,10 @@
     }
   }
   \begin{subcolumns}
-  \subcolumn{0.6}
-  \subcolumn{0.4}
+  \subcolumn{0.7}
+  \subcolumn{0.3}
   \block{}{
-    \vspace{0.5em}
+    \vspace{1em}
     \centering
     \includegraphics[width=\linewidth]{clml_qr_code.png}
   }
