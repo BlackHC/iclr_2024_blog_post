@@ -252,7 +252,7 @@
 
 \renewcommand{\bibsection}{} % This line disables the automatic "References" section heading
 
-\title{Bridging the Data Processing Inequality and Function-Space Variational Inference}
+\title{Data Processing Inequality \raisebox{0em}{\includegraphics[height=1em]{Suspension_bridge_icon.svg.png}} Function-Space Variational Inference}
 \author{Andreas Kirsch}
 \institute{University of Oxford\textsuperscript{--2023}}
 \date{\today}
@@ -287,16 +287,16 @@
   \mathrm{f}(x) &= \frac{\mathrm{p}(x) + \mathrm{q}(x)}{2}\\
   \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(x) \:\Vert\: \mathrm{q}(x)) &= \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(x) \:\Vert\: \mathrm{f}(x)) + \frac{1}{2} \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(x) \:\Vert\: \mathrm{f}(x)).
   \end{align*}
-  The square root of the Jensen-Shannon divergence, the \emph{Jensen-Shannon distance}, is symmetric, satisfies the triangle inequality and hence a metric.
+  The square root of the Jensen-Shannon divergence, the \emph{Jensen-Shannon distance}, is symmetric, satisfies the triangle inequality, and is hence a metric.
 
-  For $\mathrm{p}(x)$ and $\mathrm{q}(x)$ and shared transition function $\mathrm{f}(y \:\vert\:x)$ for the model $X \rightarrow Y$:
+  For $\mathrm{p}(x)$ and $\mathrm{q}(x)$ and a shared transition function $\mathrm{f}(y \:\vert\:x)$ for the model $X \rightarrow Y$, we apply the KL DPI twice and obtain the JSD DPI:
   %, we obtain a Jensen-Shannon divergence data processing inequality by applying the KL DPI twice:
   $$
   \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(X) \:\Vert\: \mathrm{q}(X)) \ge \mathop{\mathrm{D_\mathrm{JSD}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
   $$
   \end{theorybox}
   \begin{theorybox}[title=Mutual Information DPI]  
-  For any Markov chain $Z \rightarrow X \rightarrow Y$ with $\mathrm{f}(z, x, y) = \mathrm{f}(z) \mathrm{f}(x \:\vert\:z) \mathrm{f}(y \:\vert\:x)$ for any distribution $\mathrm{f}(z)$:
+  For any Markov chain $Z \rightarrow X \rightarrow Y$ with $\mathrm{f}(z, x, y) = \mathrm{f}(z) \mathrm{f}(x \:\vert\:z) \mathrm{f}(y \:\vert\:x)$ for any distribution $\mathrm{f}(z)$, we have:
   \begin{align*}
     \MIof{X;Z} &= \Kale{\fof{X \given Z}}{\fof{X}}\\
     &= \E{\fof{z}} {\Kale{\fof{X \given z}}{\fof{X}}}\\
@@ -311,21 +311,14 @@
 % }
 % \block{Proofs}{
 %   \begin{multicols}{2}
-  \begin{proofbox}[title={Chain Rule of the \includegraphics[width=1em]{leafy-green.png} Divergence}]
+  \begin{backgroundbox}[title={Chain Rule of the \includegraphics[width=1em]{leafy-green.png} Divergence}]
     An important property of the KL divergence is the chain rule:
     \begin{align*}
     &\Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} \\
     &\quad = \sum_{i=1}^n \Kale{\qof{\Y_i \given 
     \Y_{i-1}, ...}}{\pof{\Y_i \given \Y_{i-1}, ...}}.
     \end{align*}
-    This chain rule also yields a \textbf{chain inequality}:
-    \begin{align*}
-    \Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} &\ge \Kale{\qof{\Y_{n-1},...}}{\pof{\Y_{n-1},...}} \\
-    &...\\
-    &\ge \Kale{\qof{\Y_1}}{\pof{\Y_1}},
-    \end{align*}
-    where we start from the KL DPI and then use the chain rule. 
-  \end{proofbox}
+  \end{backgroundbox}
   \begin{proofbox}[title={Proof of the \includegraphics[width=1em]{leafy-green.png} DPI}]
     Using the chain rule of the KL divergence twice:
     % \begin{align*}
@@ -340,7 +333,16 @@
     &\quad \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{p}(Y) \:\Vert\: \mathrm{q}(Y)).
     \end{align*}
     We have equality exactly when $\mathrm{p}(x \:\vert\:y) = \mathrm{q}(x \:\vert\:y)$ for (almost) all $x, y.$
-    \end{proofbox}
+  \end{proofbox}
+  \begin{theorybox}[title={Chain Rule of the \includegraphics[width=1em]{leafy-green.png} DPI}]
+    The DPI also yields a \textbf{chain inequality}:
+    \begin{align*}
+    \Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} &\ge \Kale{\qof{\Y_{n-1},...}}{\pof{\Y_{n-1},...}} \\
+    &...\\
+    &\ge \Kale{\qof{\Y_1}}{\pof{\Y_1}},
+    \end{align*}
+    where we start from the KL DPI and then use the chain rule. 
+  \end{theorybox}
   \end{multicols}
 }
 % \column{0.25}
@@ -356,7 +358,7 @@
 % }
 \begin{subcolumns}
   \subcolumn{0.25}
-  \block{More Info}{
+  \block{Full Blog Post}{
     % \begin{tikzpicture}
       \centering
       \includegraphics[width=0.0625\textwidth]{fsvi_qr_code.png}
@@ -374,65 +376,66 @@
 \block{Function-Space Variational Inference}
 {
   \begin{tldrbox}
-    \textbf{Function-space variational inference (FSVI)} is a principled approach to Bayesian inference that respects the inherent symmetries and equivalences in overparameterized models. It focuses on approximating the meaningful posterior $\pof{[\w] \given \Dany}$ while avoiding the complexities of explicitly constructing and working with equivalence classes.
-    The FSVI-ELBO regularizes towards a data prior:
+    \textbf{Function-space variational inference (FSVI)} is a principled approach to Bayesian inference that respects the inherent symmetries and equivalences in overparameterized models. It focuses on approximating the meaningful posterior $\pof{[\w] \given \Dany}$ over prediction equivalence classes of the parameters while avoiding the complexities of explicitly constructing and working with equivalence classes.
+    The FSVI-ELBO regularizes towards a data prior using the KL DPI:
     \begin{align*}
     \E{\qof{\w}}{-\log \pof{\Dany \given \w}} + \Kale{\qof{\Y... \given \x...}}{\pof{\Y... \given \x...}},
     \end{align*}
-    unlike in regular variational inference, where we regularize towards a parameter prior $\Kale{\qof{\W}}{\pof{\W}}$.
+    (unlike in regular variational inference, where we regularize towards a parameter prior $\Kale{\qof{\W}}{\pof{\W}}$).
   \end{tldrbox}
   \begin{multicols}{2}
     \begin{backgroundbox}[title=(Regular) Variational Inference \& ELBO]
-      We approximate the Bayesian posterior $\pof{\w \given \Dany}$ with a variational distribution $\qof{\w}$ by minimizing $\Kale{\qof{\W}}{\pof{\W \given \Dany}}$ and dropping constant (intractable) terms to obtain a simplified objective, which also yields an information-theoretic \textbf{upper} bound on the information content $-\log \pof{\Dany}$ of the data $\Dany$:
+      The Bayesian posterior $\pof{\w \given \Dany}$ is approximated with a variational distribution $\qof{\w}$ by minimizing $\Kale{\qof{\W}}{\pof{\W \given \Dany}}$. Dropping constant (intractable) terms yields a simplified tractable objective, which \textbf{upper} bounds the information content $-\log \pof{\Dany}$ of the data $\Dany$:
       \begin{align*}
       & 0 \le \Kale{\qof{\W}}{\pof{\W \given \Dany}} \\
       &= \Kale{\qof{\W}}{\frac{\pof{\Dany \given \W}\,\pof{\W}}{\pof{\Dany}}}\\
       &\, = \underbrace{\E{\opq}{-\log \pof{\Dany \given \W}} + \Kale{\qof{\W}}{\pof{\W}}}_{\text{Evidence Bound (Simplified Objective)}} \\
-      &\, \quad - (\underbrace{-\log \pof{\Dany}}_{\text{(neg.~log) Evidence}})
+      &\, \quad - (\underbrace{-\log \pof{\Dany}}_{\text{(neg.~log) Evidence}}).
       \end{align*}
-      The negative of this bound is called the \textbf{evidence lower bound (ELBO)}.
+      This is equivalent to the \textbf{evidence lower bound (ELBO)}.
     \end{backgroundbox}
     \begin{theorybox}[title=Parameter Symmetries]
       Deep neural networks have many parameter symmetries: for example, in a convolutional neural network, we could swap channels without changing the predictions.
-      \emph{$\implies$ We are not interested in these symmetries, but in the predictions.}
+      \emph{$\implies$ We are not interested in these symmetries but only differing predictions.}
     \end{theorybox}
     \begin{theorybox}[title=Equivalence Classes]
-      We can use \textbf{equivalence classes} to group together parameters that lead to the same predictions on a (test) set of data:
+      \textbf{Equivalence classes} group together parameters that lead to the same predictions on a (test) set of data:
       \begin{align*}
         [\w] \triangleq \{\w' : \fof{x ; \w} = \fof{x ; \w} \quad \forall x \}.
       \end{align*}
       Crucially, \emph{different domains for $\x$ will induce different equivalence classes.}
     \end{theorybox}
     \begin{theorybox}[title=Consistency of Equivalence Classes with Bayesian Inference]
-      Any distribution over the parameters $\pof{\w}$ induces a distribution $\hpof{[\w]}$ over the equivalence classes:
+      Any distribution over the parameters $\pof{\w}$ induces a distribution $\pof{[\w]}$ over the equivalence classes, which is consistent with Bayesian inference:
       \begin{align*}
-        \hpof{[\w]} \triangleq \sum_{\w' \in [\w]} \pof{\w'}.
+        \pof{[\w]} \triangleq \sum_{\w' \in [\w]} \pof{\w'},
       \end{align*}
-      $[\w]$ commutes with Bayesian inference:
+      that is, $[\w]$ commutes with Bayesian inference:
       \begin{align*}
-        \hpof{[\w] \given \Dany} = \sum_{\w' \in [\w]} \pof{\w' \given \Dany}
+        \pof{[\w] \given \Dany} = \sum_{\w' \in [\w]} \pof{\w' \given \Dany}
         \Leftrightarrow [\W \given \Dany] = [\W] \given \Dany.
       \end{align*}
-      This commutative property is a general characteristic of applying functions to random variables. 
+      This commutative property is a general characteristic of applying (stochastic) functions to random variables. 
       %The mapping $[\cdot]$ transforms the random variable $\W$ into a new random variable $[\W]$, and this transformation commutes with Bayesian inference of course.
     \end{theorybox}
     % \begin{theorybox}[title=Commutative Diagram]
-      \begin{tikzfigure}
+    \begin{tikzfigure}
+        \centering
         % https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZABgBpiBdUkANwEMAbAVxiRAB12AjCBqOAJ4BbHg2CcAKgAsYOOgF8Q80uky58hFAEZyVWoxZtOo-sNHj202QoAEnGjABOOO+yF0cUgMaNgAEUVlVWw8AiIyLT16ZlZEEGRjXlMRXgsrOXkKJRUQDBCNIh1I6mjDOITuJMEUsUkZDIpXB2dXd08fMQClPRgoAHN4IlAAM0cIISQyEBwIJB19GKN2LygIFwAfVo9vXy7qBjouGAYABTVQzRAGGGGcbJGxicQpmaQAJhKDWPjOFbWs-aHY5nfJhOLXW73ECjcZzaivRAAZk+i3Kv1WOABVyBp3OBXBNzuQWhj3e8NmSJRZQ4ywxTScLk4bR2nUUgKOuNBlwhRIo8iAA
-        \begin{tikzcd}[ampersand replacement=\&]
-          \W \arrow[r, "\cdot \given \Dany"] \arrow[d, "{[\cdot]}"] \& \W \given \Dany \arrow[d, "{[\cdot]}"] \\
-          {[\W]} \arrow[r, "\cdot \given \Dany"]                \& {[\W] \given \Dany}                   
-        \end{tikzcd}
-      \end{tikzfigure}
+      \begin{tikzcd}[ampersand replacement=\&]
+        \W \arrow[r, "\cdot \given \Dany"] \arrow[d, "{[\cdot]}"] \& \W \given \Dany \arrow[d, "{[\cdot]}"] \\
+        {[\W]} \arrow[r, "\cdot \given \Dany"]                \& {[\W] \given \Dany}                   
+      \end{tikzcd}\\
+      {\small Commutative diagram for the equivalence classes.}
+    \end{tikzfigure}
     % \end{theorybox}
     \begin{proofbox}[title=Equality in the Infinite Data Limit]
-      Using the DPI:
       \begin{align*}
       \Kale{\qof{\W}}{\pof{\W}} &\ge \Kale{\qof{[\W]}}{\pof{[\W]}} \\
       &\ge \Kale{\qof{\Y...\given\x...}}{\pof{\Y...\given\x...}}.
       \end{align*}
-      Unless there are no parameter symmetries, the \textbf{first inequality will not be tight}.
-      For the second inequality to be tight, we need $\Kale{\qof{[\W] \given \Y_n,\x_n,...}}{\pof{[\W] \given \Y_n,\x_n,...}} \to 0$ for $n \to \infty$, which \emph{converges} as it is monotonically increasing and bounded by $\Kale{\qof{[\W]}}{\pof{[\W]}}$ from above, and thanks of Berstein von Mises' theorem we have:
+      Unless there are no parameter symmetries, the \textbf{first inequality will not be tight} ($\Kale{\qof{\W \given [\W]}}{\pof{\W \given [\W]}} > 0$). The \textbf{second inequality will be tight} as it is monotonically increasing and bounded by $\Kale{\qof{[\W]}}{\pof{[\W]}}$ from above. Thanks to Bernstein von Mises' theorem, we have:
+      For the second inequality, we need $\Kale{\qof{[\W] \given \Y_n,\x_n,...}}{\pof{[\W] \given \Y_n,\x_n,...}} \to 0$ for $n \to \infty$, which \emph{converges} as it is monotonically increasing and bounded by $\Kale{\qof{[\W]}}{\pof{[\W]}}$ from above. Thanks of Berstein von Mises' theorem we have:
       \begin{multline*}
       \Kale{\qof{[\W]}}{\pof{[\W]}} = \\
       = \sup_{n\in \mathbb{N}} \Kale{\qof{\Y_n,...\given\x_n,...}}{\pof{\Y_n,...\given\x_n,...}}.
@@ -451,10 +454,8 @@
       \end{align*}
       Then, we can apply the chain rule together with BvM:
       \begin{align*}
-        &\quad = \E{\qof{\w}}{-\log \pof{\Dany \given \w}} \\
-        &\quad \quad + \sup_n \Kale{\qof{\Y_n... \given \x_n...}}{\pof{\Y_n... \given \x_n...}} \\
-        &\quad \ge \E{\qof{\w}}{-\log \pof{\Dany \given \w}} \\
-        &\quad \quad + \Kale{\qof{\Y_n... \given \x_n...}}{\pof{\Y_n... \given \x_n...}} \quad \forall n.
+        & = \E{\qof{\w}}{-\log \pof{\Dany \given \w}}  + \sup_n \Kale{\qof{\cdot}}{\pof{\cdot}}[\Y_n... \given \x_n...] \\
+        & \ge \E{\qof{\w}}{-\log \pof{\Dany \given \w}} + \Kale{\qof{\cdot}}{\pof{\cdot}}[\Y_n... \given \x_n...] \quad \forall n.
       \end{align*}
     \end{proofbox}
     \end{multicols}
