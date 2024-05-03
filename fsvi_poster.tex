@@ -265,8 +265,8 @@
   \block{Data Processing Inequalities}{
   \begin{tldrbox}
     Informally, the \textbf{Data Processing Inequality (DPI)} states that processing data stochastically can only reduce information. 
-    Formally, for distributions $\mathrm{q}(\boldsymbol{\Theta})$ and $\mathrm{p}(\boldsymbol{\Theta})$ over a random variable $\boldsymbol{\Theta}$ and a stochastic mapping $Y = \mathrm{f}(\boldsymbol{\Theta})$, the Kullback-Leibler DPI is expressed as:
-    $$\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta})) \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(Y) \:\Vert\: \mathrm{p}(Y))$$
+    Formally, for distributions $\mathrm{q}(\boldsymbol{\Theta})$ and $\mathrm{p}(\boldsymbol{\Theta})$ over a random variable $\boldsymbol{\Theta}$ and a stochastic mapping $Y = \mathrm{f}(\boldsymbol{\Theta})$, the Kullback-Leibler DPI states:
+    $$\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta})) \ge \mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(Y) \:\Vert\: \mathrm{p}(Y)).$$
     Equality holds when $\mathop{\mathrm{D_\mathrm{KL}}}(\mathrm{q}(\boldsymbol{\Theta}\:\vert\:Y) \:\Vert\: \mathrm{p}(\boldsymbol{\Theta}\:\vert\:Y)) = 0$.
   \end{tldrbox}
   \begin{multicols}{2}
@@ -316,9 +316,18 @@
     An important property of the KL divergence is the chain rule:
     \begin{align*}
     &\Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} \\
-    &\quad = \sum_{i=1}^n \Kale{\qof{\Y_i \given 
-    \Y_{i-1}, ...}}{\pof{\Y_i \given \Y_{i-1}, ...}}.
+    &\begin{aligned}
+      & = \Kale{\qof{\Y_n \given \Y_{n-1}, ...}}{\pof{\Y_n \given \Y_{n-1}, ...}} \\
+      & \quad + \Kale{\qof{\Y_{n-1}, ...}}{\pof{\Y_{n-1}, ...}} \\
+      = ... & = \sum_{i=1}^n \Kale{\qof{\Y_i \given \Y_{i-1}, ...}}{\pof{\Y_i \given \Y_{i-1}, ...}}.
+    \end{aligned}
     \end{align*}
+    This also yields a \textbf{chain inequality}:
+    \begin{align*}
+    \Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} &\ge \Kale{\qof{\Y_{n-1},...}}{\pof{\Y_{n-1},...}} \\
+    \ge ... &\ge \Kale{\qof{\Y_1}}{\pof{\Y_1}},
+    \end{align*}
+    by repeatedly applying the chain rule and dropping the conditional term. 
   \end{backgroundbox}
   \begin{proofbox}[title={Proof of the \includegraphics[width=1em]{leafy-green.png} DPI}]
     Using the chain rule of the KL divergence twice:
@@ -335,15 +344,9 @@
     \end{align*}
     We have equality exactly when $\mathrm{p}(x \:\vert\:y) = \mathrm{q}(x \:\vert\:y)$ for (almost) all $x, y.$
   \end{proofbox}
-  \begin{theorybox}[title={Chain Rule of the \includegraphics[width=1em]{leafy-green.png} DPI}]
-    The DPI also yields a \textbf{chain inequality}:
-    \begin{align*}
-    \Kale{\qof{\Y_n,...}}{\pof{\Y_n,...}} &\ge \Kale{\qof{\Y_{n-1},...}}{\pof{\Y_{n-1},...}} \\
-    &...\\
-    &\ge \Kale{\qof{\Y_1}}{\pof{\Y_1}},
-    \end{align*}
-    where we start from the KL DPI and then use the chain rule. 
-  \end{theorybox}
+  % \begin{theorybox}[title={Chain Rule of the \includegraphics[width=1em]{leafy-green.png} DPI}]
+    
+  % \end{theorybox}
   \end{multicols}
 }
 % \column{0.25}
@@ -358,6 +361,7 @@
 %     In the literature, the negative of this bound is called the \textbf{evidence lower bound (ELBO)} and is maximized.
 % }
 \begin{subcolumns}
+  \colorlet{blockbodybgcolor}{solarized-green!5!white}
   \subcolumn{0.25}
   \block{Full Blog Post}{
     % \begin{tikzpicture}
@@ -366,10 +370,11 @@
     % \end{tikzpicture}
   }
   \subcolumn{0.75}
-  \block{More References}{
+  \block{}{
+    \vspace{1em}
     % Add references from assets/bibliography/2024-05-07-dpi-fsvi.bib
-    \nocite{cover1999elements,rudner2022tractable}
-    \bibliographystyle{plain}
+    \nocite{burt2021understanding,cover1999elements,rudner2022tractable}
+    \bibliographystyle{apalike}
     \bibliography{fsvi_poster}
   }
 \end{subcolumns}
@@ -433,20 +438,20 @@
     \begin{proofbox}[title=Equality in the Infinite Data Limit]
       \begin{align*}
       \Kale{\qof{\W}}{\pof{\W}} &\ge \Kale{\qof{[\W]}}{\pof{[\W]}} \\
-      &\ge \Kale{\qof{\Y...\given\x...}}{\pof{\Y...\given\x...}}.
+      &\ge \Kale{\qof{\Y_n...\given\x_n...}}{\pof{\Y_n...\given\x_n...}}.
       \end{align*}
-      Unless there are no parameter symmetries, the \textbf{first inequality will not be tight} ($\Kale{\qof{\W \given [\W]}}{\pof{\W \given [\W]}} > 0$). The \textbf{second inequality will be tight} as it is monotonically increasing and bounded by $\Kale{\qof{[\W]}}{\pof{[\W]}}$ from above. Thanks to Bernstein von Mises' theorem, we have:
-      For the second inequality, we need $\Kale{\qof{[\W] \given \Y_n,\x_n,...}}{\pof{[\W] \given \Y_n,\x_n,...}} \to 0$ for $n \to \infty$, which \emph{converges} as it is monotonically increasing and bounded by $\Kale{\qof{[\W]}}{\pof{[\W]}}$ from above. Thanks of Berstein von Mises' theorem we have:
+      Unless there are no parameter symmetries, the \textbf{first inequality will not be tight} ($\Kale{\qof{\W \given [\W]}}{\pof{\W \given [\W]}} > 0$). The \textbf{second inequality will be tight}: to see this, we need $\Kale{\qof{[\W] \given \Y_n,\x_n,...}}{\pof{[\W] \given \Y_n,\x_n,...}} \to 0$ for $n \to \infty$. The term \emph{converges} as it is monotonically increasing and bounded by $\Kale{\qof{[\W]}}{\pof{[\W]}}$ from above.
+      Further, thanks to Bernstein von Mises' theorem, we have $\to 0$ and thus:
       \begin{multline*}
       \Kale{\qof{[\W]}}{\pof{[\W]}} = \\
       = \sup_{n\in \mathbb{N}} \Kale{\qof{\Y_n,...\given\x_n,...}}{\pof{\Y_n,...\given\x_n,...}}.
       \end{multline*}
     \end{proofbox}
     \begin{theorybox}[title=Bernstein von Mises' Theorem]
-      BvM states that a posterior distribution converges to the maximum likelihood estimate (MLE) as the number of data points tends to infinity \emph{as long as the model parameters are identifiable, that is the true parameters we want to learn are unique, and that they have support}, which is true for $[\W]$. 
+      BvM states that a posterior distribution converges to the maximum likelihood estimate (MLE) as the number of data points tends to infinity \emph{as long as the model parameters are identifiable, that is the true parameters we want to learn are unique, and they have support}. This is true for $[\W]$ as $[\W]$ is a unique parameterization of the same distribution as $\W$, and we can ensure support.
     \end{theorybox}
     \begin{proofbox}[title=Function-Space Variational Inference \& ELBO]
-      \emph{FSVI's ELBO is just the regular ELBO but for $[\W]$ and approximations via chain rule of the DPI}:
+      \emph{FSVI's ELBO is just the regular ELBO but for $[\W]$ and uses further approximations via chain inequalities}:
       \begin{align*}
         &\Hof{\Dany} \le \Hof{\Dany} + \Kale{\qof{[\W]}}{\pof{[\W] \given \Dany}} \\
         &\quad = \Hof{\Dany} + \Kale{\qof{[\W]}}{\frac{\pof{\Dany \given [\W]} \, \pof{[\W]}}{\pof{\Dany}}} \\
