@@ -93,6 +93,32 @@ including the skimmer. The framing survives contact with all four audience types
 - **Cutting the Occam section entirely**: compressed instead — the model-description-length
   point and the long-cow footnote survive.
 
+## Round 2: verification re-reviews of v2
+
+The two most demanding reviewers re-read the revised draft against their own findings:
+
+- **Bayesian researcher (Opus):** all 8 technical-audit items and all "missing" items
+  RESOLVED; overall verdict "**now fair**" to both Lotfi et al. and the marginal-likelihood
+  tradition; confirmed the new tied-asymptote paragraph is mathematically correct.
+  Residual nits fixed in v3: dropped the "redundant block of parameters" example (truly
+  redundant parameters integrate out penalty-free — it could nullify the Occam argument),
+  added the asymptotic-ties qualifier to the TL;DR/hook crossing claim, cited Shao (1993)
+  for CV's nested-model inconsistency, and disambiguated "plain (non-model-averaged)
+  validation loss" in the bug paragraph.
+- **Pretraining researcher (Fable):** 6/8 RESOLVED, 1 partial, 1 cosmetic; verdict flipped
+  to "**would forward to the team channel**". New issues it caught in v2, fixed in v3:
+  the order-insensitivity sentence overclaimed (deliberate curricula exist precisely
+  because ordering moves the end state — now stated as asymmetric sensitivity); the
+  tied-asymptote paragraph's advocacy overshoots (now: corner case for pretraining stacks /
+  home turf for Bayesian questions; signal *grows* vs O(1) vs decays); added the
+  NAS-scale-not-frontier-scale scope on training-speed estimators, the decaying-LR-bias
+  caveat on reading L(D) off a single run, the reinstated "no fully principled split"
+  clause, the Evans & Moshonov link, and removed the unverified Kaplan token count.
+
+Both re-reviewers independently repeated the one big ask: **a real LM experiment** showing
+area and height disagreeing ("the last thing between 'good conceptual post' and 'post
+people at my lab argue about in the thread'").
+
 ## Remaining items for the author
 
 - When moving to the personal blog: copy the five figures (or the responsive webp variants),
